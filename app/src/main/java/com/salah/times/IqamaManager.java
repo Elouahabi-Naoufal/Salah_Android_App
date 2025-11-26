@@ -46,9 +46,11 @@ public class IqamaManager {
     private void setDefaultIqamaTimes() {
         iqamaTimes = new HashMap<>();
         iqamaTimes.put("Fajr", 20);
-        iqamaTimes.put("Dhuhr", 15);
+        iqamaTimes.put("Dohr", 15);
+        iqamaTimes.put("Dhuhr", 15); // Support both spellings
         iqamaTimes.put("Asr", 15);
-        iqamaTimes.put("Maghrib", 10);
+        iqamaTimes.put("Maghreb", 10);
+        iqamaTimes.put("Maghrib", 10); // Support both spellings
         iqamaTimes.put("Isha", 15);
     }
     

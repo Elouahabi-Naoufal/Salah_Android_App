@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class PrayerHighlightManager {
-    private static final String[] PRAYER_ORDER = {"Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"};
+    private static final String[] PRAYER_ORDER = {"Fajr", "Dohr", "Asr", "Maghreb", "Isha"};
     
     public static String getCurrentPrayer(PrayerTimes prayerTimes) {
         if (prayerTimes == null) return null;
@@ -17,7 +17,6 @@ public class PrayerHighlightManager {
         
         String[] times = {
             prayerTimes.getFajr(),
-            prayerTimes.getSunrise(),
             prayerTimes.getDhuhr(),
             prayerTimes.getAsr(),
             prayerTimes.getMaghrib(),
@@ -50,7 +49,6 @@ public class PrayerHighlightManager {
         
         String[] times = {
             prayerTimes.getFajr(),
-            prayerTimes.getSunrise(),
             prayerTimes.getDhuhr(),
             prayerTimes.getAsr(),
             prayerTimes.getMaghrib(),
@@ -70,8 +68,7 @@ public class PrayerHighlightManager {
     
     public static boolean isCurrentPrayer(String prayer, PrayerTimes prayerTimes) {
         String currentPrayer = getCurrentPrayer(prayerTimes);
-        return prayer.equals(currentPrayer) || 
-               (prayer.equals("Chorok") && "Sunrise".equals(currentPrayer));
+        return prayer.equals(currentPrayer);
     }
     
     public static long getTimeUntilNextPrayer(PrayerTimes prayerTimes) {
@@ -97,10 +94,9 @@ public class PrayerHighlightManager {
     private static String getTimeForPrayer(String prayer, PrayerTimes prayerTimes) {
         switch (prayer) {
             case "Fajr": return prayerTimes.getFajr();
-            case "Sunrise": return prayerTimes.getSunrise();
-            case "Dhuhr": return prayerTimes.getDhuhr();
+            case "Dohr": return prayerTimes.getDhuhr();
             case "Asr": return prayerTimes.getAsr();
-            case "Maghrib": return prayerTimes.getMaghrib();
+            case "Maghreb": return prayerTimes.getMaghrib();
             case "Isha": return prayerTimes.getIsha();
             default: return "00:00";
         }

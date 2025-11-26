@@ -66,15 +66,14 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setupPrayerGrid() {
-        prayerGrid.setLayoutManager(new GridLayoutManager(this, 2));
+        prayerGrid.setLayoutManager(new GridLayoutManager(this, 1));
         
-        // Initialize with loading state
+        // Initialize with loading state - 5 essential prayers only
         List<PrayerAdapter.PrayerItem> prayers = new ArrayList<>();
         prayers.add(new PrayerAdapter.PrayerItem("Fajr", "Loading...", false));
-        prayers.add(new PrayerAdapter.PrayerItem("Sunrise", "Loading...", false));
-        prayers.add(new PrayerAdapter.PrayerItem("Dhuhr", "Loading...", false));
+        prayers.add(new PrayerAdapter.PrayerItem("Dohr", "Loading...", false));
         prayers.add(new PrayerAdapter.PrayerItem("Asr", "Loading...", false));
-        prayers.add(new PrayerAdapter.PrayerItem("Maghrib", "Loading...", false));
+        prayers.add(new PrayerAdapter.PrayerItem("Maghreb", "Loading...", false));
         prayers.add(new PrayerAdapter.PrayerItem("Isha", "Loading...", false));
         
         PrayerAdapter adapter = new PrayerAdapter(prayers);
@@ -148,10 +147,9 @@ public class MainActivity extends AppCompatActivity {
         String currentPrayer = PrayerHighlightManager.getCurrentPrayer(prayerTimes);
         
         prayers.add(new PrayerAdapter.PrayerItem("Fajr", prayerTimes.getFajr(), "Fajr".equals(currentPrayer)));
-        prayers.add(new PrayerAdapter.PrayerItem("Sunrise", prayerTimes.getSunrise(), "Sunrise".equals(currentPrayer)));
-        prayers.add(new PrayerAdapter.PrayerItem("Dhuhr", prayerTimes.getDhuhr(), "Dhuhr".equals(currentPrayer)));
+        prayers.add(new PrayerAdapter.PrayerItem("Dohr", prayerTimes.getDhuhr(), "Dohr".equals(currentPrayer)));
         prayers.add(new PrayerAdapter.PrayerItem("Asr", prayerTimes.getAsr(), "Asr".equals(currentPrayer)));
-        prayers.add(new PrayerAdapter.PrayerItem("Maghrib", prayerTimes.getMaghrib(), "Maghrib".equals(currentPrayer)));
+        prayers.add(new PrayerAdapter.PrayerItem("Maghreb", prayerTimes.getMaghrib(), "Maghreb".equals(currentPrayer)));
         prayers.add(new PrayerAdapter.PrayerItem("Isha", prayerTimes.getIsha(), "Isha".equals(currentPrayer)));
         
         PrayerAdapter adapter = (PrayerAdapter) prayerGrid.getAdapter();
@@ -180,10 +178,9 @@ public class MainActivity extends AppCompatActivity {
     private String getTimeForPrayer(String prayer, PrayerTimes prayerTimes) {
         switch (prayer) {
             case "Fajr": return prayerTimes.getFajr();
-            case "Sunrise": return prayerTimes.getSunrise();
-            case "Dhuhr": return prayerTimes.getDhuhr();
+            case "Dohr": return prayerTimes.getDhuhr();
             case "Asr": return prayerTimes.getAsr();
-            case "Maghrib": return prayerTimes.getMaghrib();
+            case "Maghreb": return prayerTimes.getMaghrib();
             case "Isha": return prayerTimes.getIsha();
             default: return "00:00";
         }

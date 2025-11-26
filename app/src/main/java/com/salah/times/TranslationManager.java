@@ -22,9 +22,12 @@ public class TranslationManager {
         en.put("change_city", "Change City");
         en.put("fajr", "Fajr");
         en.put("sunrise", "Sunrise");
+        en.put("chorok", "Chorok");
         en.put("dhuhr", "Dhuhr");
+        en.put("dohr", "Dohr");
         en.put("asr", "Asr");
         en.put("maghrib", "Maghrib");
+        en.put("maghreb", "Maghreb");
         en.put("isha", "Isha");
         translations.put("en", en);
         
@@ -38,9 +41,12 @@ public class TranslationManager {
         ar.put("change_city", "تغيير المدينة");
         ar.put("fajr", "الفجر");
         ar.put("sunrise", "الشروق");
+        ar.put("chorok", "الشروق");
         ar.put("dhuhr", "الظهر");
+        ar.put("dohr", "الظهر");
         ar.put("asr", "العصر");
         ar.put("maghrib", "المغرب");
+        ar.put("maghreb", "المغرب");
         ar.put("isha", "العشاء");
         translations.put("ar", ar);
         
@@ -54,9 +60,12 @@ public class TranslationManager {
         fr.put("change_city", "Changer de Ville");
         fr.put("fajr", "Fajr");
         fr.put("sunrise", "Lever du soleil");
+        fr.put("chorok", "Lever du soleil");
         fr.put("dhuhr", "Dhuhr");
+        fr.put("dohr", "Dohr");
         fr.put("asr", "Asr");
         fr.put("maghrib", "Maghrib");
+        fr.put("maghreb", "Maghreb");
         fr.put("isha", "Isha");
         translations.put("fr", fr);
     }

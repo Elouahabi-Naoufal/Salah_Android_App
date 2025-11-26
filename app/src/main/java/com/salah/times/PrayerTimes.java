@@ -40,7 +40,6 @@ public class PrayerTimes {
     public List<Prayer> getPrayerList() {
         List<Prayer> prayers = new ArrayList<>();
         prayers.add(new Prayer("Fajr", fajr, "☽"));
-        prayers.add(new Prayer("Chorok", getChorok(), "☀"));
         prayers.add(new Prayer("Dohr", dhuhr, "☉"));
         prayers.add(new Prayer("Asr", asr, "☀"));
         prayers.add(new Prayer("Maghreb", maghrib, "☾"));
