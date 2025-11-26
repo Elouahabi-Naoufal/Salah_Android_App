@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView clockText;
     private TextView dateText;
     private TextView hijriText;
-    private TextView nextPrayerText;
+
     private TextView countdownText;
     private RecyclerView prayerGrid;
     private Handler handler = new Handler();
@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
         clockText = findViewById(R.id.clock_text);
         dateText = findViewById(R.id.date_text);
         hijriText = findViewById(R.id.hijri_text);
-        nextPrayerText = findViewById(R.id.next_prayer_text);
         countdownText = findViewById(R.id.countdown_text);
         prayerGrid = findViewById(R.id.prayer_grid);
         
@@ -127,13 +126,20 @@ public class MainActivity extends AppCompatActivity {
     private void updatePrayerTimesUI(PrayerTimes prayerTimes) {
         // Update next prayer display
         String nextPrayer = PrayerHighlightManager.getNextPrayer(prayerTimes);
-        nextPrayerText.setText(TranslationManager.tr("next_prayer") + ": " + TranslationManager.tr(nextPrayer.toLowerCase()));
+        String nextPrayerDisplay = TranslationManager.tr(nextPrayer.toLowerCase());
         
-        // Update Iqama countdown
-        IqamaManager iqamaManager = new IqamaManager(this);
-        String nextPrayerTime = getTimeForPrayer(nextPrayer, prayerTimes);
-        String iqamaCountdown = iqamaManager.getIqamaCountdown(nextPrayer, nextPrayerTime);
-        countdownText.setText(iqamaCountdown);
+        // Check if next prayer is tomorrow's Fajr (after Isha)
+        if ("Fajr".equals(nextPrayer) && isAfterIsha(prayerTimes)) {
+            nextPrayerDisplay += " (" + TranslationManager.tr("tomorrow") + ")";
+        }
+        
+        // Show only countdown to next prayer
+        long timeUntilNext = PrayerHighlightManager.getTimeUntilNextPrayer(prayerTimes);
+        String countdown = formatCountdown(timeUntilNext);
+        android.util.Log.d("MainActivity", "Countdown: " + countdown + ", timeUntilNext: " + timeUntilNext);
+        countdownText.setText(countdown);
+        
+
         
         // Update prayer grid with highlighting
         updatePrayerGrid(prayerTimes);
@@ -187,8 +193,7 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void showError(String error) {
-        // Show error in UI
-        nextPrayerText.setText(TranslationManager.tr("loading"));
+        countdownText.setText("--:--:--");
         if (hijriText != null) {
             hijriText.setText(TranslationManager.tr("hijri_unavailable"));
         }
@@ -248,5 +253,31 @@ public class MainActivity extends AppCompatActivity {
     private void startPrayerNotificationService() {
         Intent serviceIntent = new Intent(this, PrayerNotificationService.class);
         startForegroundService(serviceIntent);
+    }
+    
+    private boolean isAfterIsha(PrayerTimes prayerTimes) {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int currentMinutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
+        
+        try {
+            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+            java.util.Date ishaTime = format.parse(prayerTimes.getIsha());
+            java.util.Calendar ishaCal = java.util.Calendar.getInstance();
+            ishaCal.setTime(ishaTime);
+            int ishaMinutes = ishaCal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + ishaCal.get(java.util.Calendar.MINUTE);
+            
+            return currentMinutes >= ishaMinutes;
+        } catch (java.text.ParseException e) {
+            return false;
+        }
+    }
+    
+    private String formatCountdown(long milliseconds) {
+        long totalSeconds = milliseconds / 1000;
+        long hours = totalSeconds / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+        
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 }

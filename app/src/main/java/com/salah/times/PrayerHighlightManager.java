@@ -62,7 +62,7 @@ public class PrayerHighlightManager {
             }
         }
         
-        // If past all prayers, next is tomorrow's Fajr
+        // After Isha, next is tomorrow's Fajr (matching Python logic)
         return "Fajr";
     }
     
@@ -74,21 +74,29 @@ public class PrayerHighlightManager {
     public static long getTimeUntilNextPrayer(PrayerTimes prayerTimes) {
         if (prayerTimes == null) return 0;
         
-        String nextPrayer = getNextPrayer(prayerTimes);
-        if (nextPrayer == null) return 0;
-        
         Calendar now = Calendar.getInstance();
         int currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
         
-        String nextPrayerTime = getTimeForPrayer(nextPrayer, prayerTimes);
-        int nextPrayerMinutes = parseTimeToMinutes(nextPrayerTime);
+        String[] times = {
+            prayerTimes.getFajr(),
+            prayerTimes.getDhuhr(),
+            prayerTimes.getAsr(),
+            prayerTimes.getMaghrib(),
+            prayerTimes.getIsha()
+        };
         
-        // If next prayer is tomorrow's Fajr
-        if (nextPrayerMinutes <= currentMinutes) {
-            nextPrayerMinutes += 24 * 60; // Add 24 hours
+        // Check for next prayer today
+        for (int i = 0; i < PRAYER_ORDER.length; i++) {
+            int prayerMinutes = parseTimeToMinutes(times[i]);
+            if (currentMinutes < prayerMinutes) {
+                return (prayerMinutes - currentMinutes) * 60 * 1000;
+            }
         }
         
-        return (nextPrayerMinutes - currentMinutes) * 60 * 1000; // Convert to milliseconds
+        // After Isha: calculate time to tomorrow's Fajr (Python logic)
+        int fajrMinutes = parseTimeToMinutes(prayerTimes.getFajr());
+        int minutesUntilTomorrowFajr = (24 * 60) - currentMinutes + fajrMinutes;
+        return minutesUntilTomorrowFajr * 60 * 1000;
     }
     
     private static String getTimeForPrayer(String prayer, PrayerTimes prayerTimes) {
