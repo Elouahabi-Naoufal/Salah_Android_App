@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_monthly_calendar"
+        android:title="📅 Monthly Calendar"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_weekly_schedule"
+        android:title="📋 Weekly Schedule"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_timezone_view"
+        android:title="🌍 Multiple Timezones"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="⚙️ Settings"
+        app:showAsAction="never" />
+
+</menu>

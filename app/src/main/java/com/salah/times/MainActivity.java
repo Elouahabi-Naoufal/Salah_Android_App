@@ -1,13 +1,19 @@
 package com.salah.times;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,10 +32,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        // Handle single instance
+        SingleInstanceManager.handleSingleInstance(this);
+        
         initViews();
         setupPrayerGrid();
         startClockUpdate();
         loadPrayerTimes();
+        
+        // Check if first time setup needed
+        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
+        if (prefsManager.getDefaultCity().equals("Casablanca") && !hasUserSelectedCity()) {
+            startCitySelection();
+        }
+        
+        // Start persistent notification service
+        startPrayerNotificationService();
     }
     
     private void initViews() {
@@ -39,11 +57,28 @@ public class MainActivity extends AppCompatActivity {
         nextPrayerText = findViewById(R.id.next_prayer_text);
         countdownText = findViewById(R.id.countdown_text);
         prayerGrid = findViewById(R.id.prayer_grid);
+        
+        // Setup settings button
+        findViewById(R.id.settings_button).setOnClickListener(v -> {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        });
     }
     
     private void setupPrayerGrid() {
         prayerGrid.setLayoutManager(new GridLayoutManager(this, 2));
-        // Will add adapter later
+        
+        // Initialize with loading state
+        List<PrayerAdapter.PrayerItem> prayers = new ArrayList<>();
+        prayers.add(new PrayerAdapter.PrayerItem("Fajr", "Loading...", false));
+        prayers.add(new PrayerAdapter.PrayerItem("Sunrise", "Loading...", false));
+        prayers.add(new PrayerAdapter.PrayerItem("Dhuhr", "Loading...", false));
+        prayers.add(new PrayerAdapter.PrayerItem("Asr", "Loading...", false));
+        prayers.add(new PrayerAdapter.PrayerItem("Maghrib", "Loading...", false));
+        prayers.add(new PrayerAdapter.PrayerItem("Isha", "Loading...", false));
+        
+        PrayerAdapter adapter = new PrayerAdapter(prayers);
+        prayerGrid.setAdapter(adapter);
     }
     
     private void startClockUpdate() {
@@ -70,21 +105,96 @@ public class MainActivity extends AppCompatActivity {
         SharedPrefsManager prefsManager = new SharedPrefsManager(this);
         City defaultCity = CitiesData.getCityByName(prefsManager.getDefaultCity());
         if (defaultCity != null) {
-            PrayerTimesService.fetchPrayerTimes(defaultCity)
-                .thenAccept(prayerTimes -> runOnUiThread(() -> updatePrayerTimesUI(prayerTimes)))
-                .exceptionally(throwable -> {
-                    runOnUiThread(() -> showError(throwable.getMessage()));
-                    return null;
-                });
+            PrayerTimeWorker worker = new PrayerTimeWorker(this);
+            worker.loadPrayerTimes(defaultCity, new PrayerTimeWorker.PrayerTimeCallback() {
+                @Override
+                public void onSuccess(PrayerTimes prayerTimes) {
+                    runOnUiThread(() -> updatePrayerTimesUI(prayerTimes));
+                }
+                
+                @Override
+                public void onError(String error) {
+                    runOnUiThread(() -> showError(error));
+                }
+                
+                @Override
+                public void onCachedData(PrayerTimes prayerTimes, int daysRemaining) {
+                    runOnUiThread(() -> updatePrayerTimesUI(prayerTimes));
+                }
+            });
         }
     }
     
     private void updatePrayerTimesUI(PrayerTimes prayerTimes) {
-        // Update UI with prayer times
+        // Update next prayer display
+        String nextPrayer = PrayerHighlightManager.getNextPrayer(prayerTimes);
+        nextPrayerText.setText(TranslationManager.tr("next_prayer") + ": " + TranslationManager.tr(nextPrayer.toLowerCase()));
+        
+        // Update Iqama countdown
+        IqamaManager iqamaManager = new IqamaManager(this);
+        String nextPrayerTime = getTimeForPrayer(nextPrayer, prayerTimes);
+        String iqamaCountdown = iqamaManager.getIqamaCountdown(nextPrayer, nextPrayerTime);
+        countdownText.setText(iqamaCountdown);
+        
+        // Update prayer grid with highlighting
+        updatePrayerGrid(prayerTimes);
+        
+        // Update Hijri date
+        updateHijriDate();
+    }
+    
+    private void updatePrayerGrid(PrayerTimes prayerTimes) {
+        List<PrayerAdapter.PrayerItem> prayers = new ArrayList<>();
+        String currentPrayer = PrayerHighlightManager.getCurrentPrayer(prayerTimes);
+        
+        prayers.add(new PrayerAdapter.PrayerItem("Fajr", prayerTimes.getFajr(), "Fajr".equals(currentPrayer)));
+        prayers.add(new PrayerAdapter.PrayerItem("Sunrise", prayerTimes.getSunrise(), "Sunrise".equals(currentPrayer)));
+        prayers.add(new PrayerAdapter.PrayerItem("Dhuhr", prayerTimes.getDhuhr(), "Dhuhr".equals(currentPrayer)));
+        prayers.add(new PrayerAdapter.PrayerItem("Asr", prayerTimes.getAsr(), "Asr".equals(currentPrayer)));
+        prayers.add(new PrayerAdapter.PrayerItem("Maghrib", prayerTimes.getMaghrib(), "Maghrib".equals(currentPrayer)));
+        prayers.add(new PrayerAdapter.PrayerItem("Isha", prayerTimes.getIsha(), "Isha".equals(currentPrayer)));
+        
+        PrayerAdapter adapter = (PrayerAdapter) prayerGrid.getAdapter();
+        if (adapter != null) {
+            adapter.updatePrayers(prayers);
+        }
+    }
+    
+    private void updateHijriDate() {
+        HijriDateManager.fetchHijriDate()
+            .thenAccept(hijriDate -> runOnUiThread(() -> {
+                if (hijriText != null) {
+                    hijriText.setText(hijriDate);
+                }
+            }))
+            .exceptionally(throwable -> {
+                runOnUiThread(() -> {
+                    if (hijriText != null) {
+                        hijriText.setText(TranslationManager.tr("hijri_unavailable"));
+                    }
+                });
+                return null;
+            });
+    }
+    
+    private String getTimeForPrayer(String prayer, PrayerTimes prayerTimes) {
+        switch (prayer) {
+            case "Fajr": return prayerTimes.getFajr();
+            case "Sunrise": return prayerTimes.getSunrise();
+            case "Dhuhr": return prayerTimes.getDhuhr();
+            case "Asr": return prayerTimes.getAsr();
+            case "Maghrib": return prayerTimes.getMaghrib();
+            case "Isha": return prayerTimes.getIsha();
+            default: return "00:00";
+        }
     }
     
     private void showError(String error) {
-        // Show error message
+        // Show error in UI
+        nextPrayerText.setText(TranslationManager.tr("loading"));
+        if (hijriText != null) {
+            hijriText.setText(TranslationManager.tr("hijri_unavailable"));
+        }
     }
     
     @Override
@@ -93,5 +203,53 @@ public class MainActivity extends AppCompatActivity {
         if (handler != null && updateTimeRunnable != null) {
             handler.removeCallbacks(updateTimeRunnable);
         }
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.view_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        
+        if (id == R.id.action_monthly_calendar) {
+            showFeatureUnavailable("Monthly Calendar");
+            return true;
+        } else if (id == R.id.action_weekly_schedule) {
+            showFeatureUnavailable("Weekly Schedule");
+            return true;
+        } else if (id == R.id.action_timezone_view) {
+            showFeatureUnavailable("Multiple Timezones");
+            return true;
+        } else if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        
+        return super.onOptionsItemSelected(item);
+    }
+    
+    private void showFeatureUnavailable(String featureName) {
+        Toast.makeText(this, featureName + " feature coming soon!", Toast.LENGTH_SHORT).show();
+    }
+    
+    private boolean hasUserSelectedCity() {
+        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
+        return !prefsManager.getDefaultCity().equals("Casablanca") || 
+               getSharedPreferences("app_prefs", MODE_PRIVATE).getBoolean("city_selected", false);
+    }
+    
+    private void startCitySelection() {
+        Intent intent = new Intent(this, CitySelectionActivity.class);
+        startActivity(intent);
+    }
+    
+    private void startPrayerNotificationService() {
+        Intent serviceIntent = new Intent(this, PrayerNotificationService.class);
+        startForegroundService(serviceIntent);
     }
 }

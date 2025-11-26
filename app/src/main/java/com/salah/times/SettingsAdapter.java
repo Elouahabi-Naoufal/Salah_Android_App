@@ -1,0 +1,168 @@
+package com.salah.times;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.*;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import java.util.List;
+
+public class SettingsAdapter extends FragmentStateAdapter {
+    private SharedPrefsManager prefsManager;
+    private IqamaManager iqamaManager;
+    
+    public SettingsAdapter(FragmentActivity activity, SharedPrefsManager prefsManager, IqamaManager iqamaManager) {
+        super(activity);
+        this.prefsManager = prefsManager;
+        this.iqamaManager = iqamaManager;
+    }
+    
+    @NonNull
+    @Override
+    public Fragment createFragment(int position) {
+        switch (position) {
+            case 0: return new GeneralSettingsFragment(prefsManager);
+            case 1: return new IqamaSettingsFragment(iqamaManager);
+            case 2: return new NotificationSettingsFragment();
+            default: return new GeneralSettingsFragment(prefsManager);
+        }
+    }
+    
+    @Override
+    public int getItemCount() {
+        return 3;
+    }
+    
+    public static class GeneralSettingsFragment extends Fragment {
+        private SharedPrefsManager prefsManager;
+        
+        public GeneralSettingsFragment(SharedPrefsManager prefsManager) {
+            this.prefsManager = prefsManager;
+        }
+        
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, android.os.Bundle savedInstanceState) {
+            LinearLayout layout = new LinearLayout(getContext());
+            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.setPadding(32, 32, 32, 32);
+            
+            // Language selection
+            TextView langLabel = new TextView(getContext());
+            langLabel.setText("Language");
+            langLabel.setTextSize(16);
+            layout.addView(langLabel);
+            
+            Spinner langSpinner = new Spinner(getContext());
+            ArrayAdapter<String> langAdapter = new ArrayAdapter<>(getContext(), 
+                android.R.layout.simple_spinner_item, new String[]{"English", "العربية", "Français"});
+            langAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            langSpinner.setAdapter(langAdapter);
+            layout.addView(langSpinner);
+            
+            // City selection
+            TextView cityLabel = new TextView(getContext());
+            cityLabel.setText("Default City");
+            cityLabel.setTextSize(16);
+            cityLabel.setPadding(0, 32, 0, 8);
+            layout.addView(cityLabel);
+            
+            Spinner citySpinner = new Spinner(getContext());
+            List<City> cities = CitiesData.getAllCities();
+            String[] cityNames = new String[cities.size()];
+            for (int i = 0; i < cities.size(); i++) {
+                cityNames[i] = cities.get(i).getNameEn();
+            }
+            ArrayAdapter<String> cityAdapter = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_spinner_item, cityNames);
+            cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            citySpinner.setAdapter(cityAdapter);
+            layout.addView(citySpinner);
+            
+            return layout;
+        }
+    }
+    
+    public static class IqamaSettingsFragment extends Fragment {
+        private IqamaManager iqamaManager;
+        
+        public IqamaSettingsFragment(IqamaManager iqamaManager) {
+            this.iqamaManager = iqamaManager;
+        }
+        
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, android.os.Bundle savedInstanceState) {
+            ScrollView scrollView = new ScrollView(getContext());
+            LinearLayout layout = new LinearLayout(getContext());
+            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.setPadding(32, 32, 32, 32);
+            
+            String[] prayers = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"};
+            String[] icons = {"☽", "☉", "☀", "☾", "★"};
+            
+            for (int i = 0; i < prayers.length; i++) {
+                LinearLayout prayerLayout = new LinearLayout(getContext());
+                prayerLayout.setOrientation(LinearLayout.HORIZONTAL);
+                prayerLayout.setPadding(0, 16, 0, 16);
+                
+                TextView icon = new TextView(getContext());
+                icon.setText(icons[i]);
+                icon.setTextSize(20);
+                icon.setPadding(0, 0, 16, 0);
+                prayerLayout.addView(icon);
+                
+                TextView prayerName = new TextView(getContext());
+                prayerName.setText(prayers[i]);
+                prayerName.setTextSize(16);
+                prayerName.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+                prayerLayout.addView(prayerName);
+                
+                Spinner delaySpinner = new Spinner(getContext());
+                String[] delays = new String[61];
+                for (int j = 0; j <= 60; j++) {
+                    delays[j] = j + " min";
+                }
+                ArrayAdapter<String> delayAdapter = new ArrayAdapter<>(getContext(),
+                    android.R.layout.simple_spinner_item, delays);
+                delayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                delaySpinner.setAdapter(delayAdapter);
+                delaySpinner.setSelection(iqamaManager.getIqamaDelay(prayers[i]));
+                prayerLayout.addView(delaySpinner);
+                
+                layout.addView(prayerLayout);
+            }
+            
+            scrollView.addView(layout);
+            return scrollView;
+        }
+    }
+    
+    public static class NotificationSettingsFragment extends Fragment {
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, android.os.Bundle savedInstanceState) {
+            LinearLayout layout = new LinearLayout(getContext());
+            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.setPadding(32, 32, 32, 32);
+            
+            TextView title = new TextView(getContext());
+            title.setText("Notification Settings");
+            title.setTextSize(18);
+            layout.addView(title);
+            
+            CheckBox soundEnabled = new CheckBox(getContext());
+            soundEnabled.setText("Enable Sound");
+            soundEnabled.setChecked(true);
+            layout.addView(soundEnabled);
+            
+            CheckBox vibrationEnabled = new CheckBox(getContext());
+            vibrationEnabled.setText("Enable Vibration");
+            vibrationEnabled.setChecked(true);
+            layout.addView(vibrationEnabled);
+            
+            return layout;
+        }
+    }
+}
