@@ -42,11 +42,11 @@ public class PrayerAdapter extends RecyclerView.Adapter<PrayerAdapter.PrayerView
         holder.timeText.setText(prayer.time);
         
         if (prayer.isNext) {
-            holder.nameText.setTextColor(0xFF4CAF50); // Green for next prayer
-            holder.timeText.setTextColor(0xFF4CAF50);
+            holder.nameText.setTextColor(0xFF66BB6A); // Green for next prayer
+            holder.timeText.setTextColor(0xFF66BB6A);
         } else {
-            holder.nameText.setTextColor(0xFF212121); // Default color
-            holder.timeText.setTextColor(0xFF757575);
+            holder.nameText.setTextColor(0xFFFFFFFF); // White for dark theme
+            holder.timeText.setTextColor(0xB3FFFFFF); // Semi-transparent white
         }
     }
     
