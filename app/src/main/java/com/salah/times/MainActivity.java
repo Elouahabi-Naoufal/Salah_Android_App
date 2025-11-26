@@ -64,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         });
+        
+        // Setup refresh button
+        findViewById(R.id.refresh_button).setOnClickListener(v -> {
+            refreshApp();
+        });
     }
     
     private void setupPrayerGrid() {
@@ -249,6 +254,24 @@ public class MainActivity extends AppCompatActivity {
         }
         
         return super.onOptionsItemSelected(item);
+    }
+    
+    private void refreshApp() {
+        // Reset UI to loading state like app startup
+        setupPrayerGrid();
+        countdownText.setText("--:--:--");
+        if (hijriText != null) {
+            hijriText.setText("Loading...");
+        }
+        
+        // Clear current data
+        currentPrayerTimes = null;
+        tomorrowsFajr = null;
+        
+        // Reload everything
+        loadPrayerTimes();
+        
+        Toast.makeText(this, "Refreshing prayer times...", Toast.LENGTH_SHORT).show();
     }
     
     private void showFeatureUnavailable(String featureName) {
