@@ -67,7 +67,15 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setupPrayerGrid() {
-        prayerGrid.setLayoutManager(new GridLayoutManager(this, 1));
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
+        // Make the first item (Fajr) span 2 columns to center it
+        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                return position == 0 ? 2 : 1; // First item spans 2 columns
+            }
+        });
+        prayerGrid.setLayoutManager(gridLayoutManager);
         
         // Initialize with loading state - 5 essential prayers only
         List<PrayerAdapter.PrayerItem> prayers = new ArrayList<>();

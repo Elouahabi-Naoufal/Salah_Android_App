@@ -31,7 +31,7 @@ public class PrayerAdapter extends RecyclerView.Adapter<PrayerAdapter.PrayerView
     @Override
     public PrayerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-            .inflate(android.R.layout.simple_list_item_2, parent, false);
+            .inflate(R.layout.item_prayer_card, parent, false);
         return new PrayerViewHolder(view);
     }
     
@@ -41,12 +41,18 @@ public class PrayerAdapter extends RecyclerView.Adapter<PrayerAdapter.PrayerView
         holder.nameText.setText(TranslationManager.tr(prayer.name.toLowerCase()));
         holder.timeText.setText(prayer.time);
         
+        // Set prayer icon
+        String icon = getPrayerIcon(prayer.name);
+        holder.iconText.setText(icon);
+        
         if (prayer.isNext) {
             holder.nameText.setTextColor(0xFF66BB6A); // Green for next prayer
             holder.timeText.setTextColor(0xFF66BB6A);
+            holder.cardView.setCardBackgroundColor(0xFF2D5A27); // Darker green background
         } else {
             holder.nameText.setTextColor(0xFFFFFFFF); // White for dark theme
-            holder.timeText.setTextColor(0xB3FFFFFF); // Semi-transparent white
+            holder.timeText.setTextColor(0xFFFFFFFF); // White for time
+            holder.cardView.setCardBackgroundColor(0xFF2D2D2D); // Dark card background
         }
     }
     
@@ -63,11 +69,26 @@ public class PrayerAdapter extends RecyclerView.Adapter<PrayerAdapter.PrayerView
     static class PrayerViewHolder extends RecyclerView.ViewHolder {
         TextView nameText;
         TextView timeText;
+        TextView iconText;
+        androidx.cardview.widget.CardView cardView;
         
         PrayerViewHolder(View itemView) {
             super(itemView);
-            nameText = itemView.findViewById(android.R.id.text1);
-            timeText = itemView.findViewById(android.R.id.text2);
+            nameText = itemView.findViewById(R.id.prayer_name);
+            timeText = itemView.findViewById(R.id.prayer_time);
+            iconText = itemView.findViewById(R.id.prayer_icon);
+            cardView = (androidx.cardview.widget.CardView) itemView;
+        }
+    }
+    
+    private String getPrayerIcon(String prayerName) {
+        switch (prayerName) {
+            case "Fajr": return "🌅";
+            case "Dohr": return "☀️";
+            case "Asr": return "🌤️";
+            case "Maghreb": return "🌅";
+            case "Isha": return "🌙";
+            default: return "🕌";
         }
     }
 }
