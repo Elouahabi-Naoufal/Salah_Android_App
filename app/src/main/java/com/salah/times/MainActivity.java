@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView prayerGrid;
     private Handler handler = new Handler();
     private Runnable updateTimeRunnable;
+    private PrayerTimes currentPrayerTimes;
+    private String tomorrowsFajr = null;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +99,9 @@ public class MainActivity extends AppCompatActivity {
         Date now = new Date();
         clockText.setText(timeFormat.format(now));
         dateText.setText(dateFormat.format(now));
+        
+        // Update countdown in real-time
+        updateLiveCountdown();
     }
     
     private void loadPrayerTimes() {
@@ -124,28 +129,31 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void updatePrayerTimesUI(PrayerTimes prayerTimes) {
-        // Update next prayer display
-        String nextPrayer = PrayerHighlightManager.getNextPrayer(prayerTimes);
-        String nextPrayerDisplay = TranslationManager.tr(nextPrayer.toLowerCase());
+        this.currentPrayerTimes = prayerTimes;
         
-        // Check if next prayer is tomorrow's Fajr (after Isha)
-        if ("Fajr".equals(nextPrayer) && isAfterIsha(prayerTimes)) {
-            nextPrayerDisplay += " (" + TranslationManager.tr("tomorrow") + ")";
+        // Fetch tomorrow's Fajr for countdown calculation
+        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
+        City defaultCity = CitiesData.getCityByName(prefsManager.getDefaultCity());
+        if (defaultCity != null) {
+            PrayerTimesService.fetchTomorrowsFajr(defaultCity)
+                .thenAccept(fajrTime -> {
+                    tomorrowsFajr = fajrTime;
+                    android.util.Log.d("MainActivity", "Tomorrow's Fajr: " + tomorrowsFajr);
+                })
+                .exceptionally(throwable -> {
+                    tomorrowsFajr = "05:30"; // Fallback
+                    return null;
+                });
         }
-        
-        // Show only countdown to next prayer
-        long timeUntilNext = PrayerHighlightManager.getTimeUntilNextPrayer(prayerTimes);
-        String countdown = formatCountdown(timeUntilNext);
-        android.util.Log.d("MainActivity", "Countdown: " + countdown + ", timeUntilNext: " + timeUntilNext);
-        countdownText.setText(countdown);
-        
-
         
         // Update prayer grid with highlighting
         updatePrayerGrid(prayerTimes);
         
         // Update Hijri date
         updateHijriDate();
+        
+        // Initial countdown update
+        updateLiveCountdown();
     }
     
     private void updatePrayerGrid(PrayerTimes prayerTimes) {
@@ -279,5 +287,58 @@ public class MainActivity extends AppCompatActivity {
         long seconds = totalSeconds % 60;
         
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+    
+    private void updateLiveCountdown() {
+        if (currentPrayerTimes != null) {
+            java.util.Calendar now = java.util.Calendar.getInstance();
+            int currentMinutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE);
+            int currentSeconds = now.get(java.util.Calendar.SECOND);
+            
+            String nextPrayer = PrayerHighlightManager.getNextPrayer(currentPrayerTimes);
+            String nextPrayerTime = getTimeForPrayer(nextPrayer, currentPrayerTimes);
+            
+            try {
+                java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+                java.util.Date prayerDate = format.parse(nextPrayerTime);
+                java.util.Calendar prayerCal = java.util.Calendar.getInstance();
+                prayerCal.setTime(prayerDate);
+                int prayerMinutes = prayerCal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + prayerCal.get(java.util.Calendar.MINUTE);
+                
+                int remainingMinutes;
+                
+                // Check if we're after Isha and next prayer is Fajr (tomorrow)
+                if ("Fajr".equals(nextPrayer) && isAfterIsha(currentPrayerTimes) && tomorrowsFajr != null) {
+                    // Use tomorrow's Fajr time
+                    java.util.Date tomorrowFajrDate = format.parse(tomorrowsFajr);
+                    java.util.Calendar tomorrowFajrCal = java.util.Calendar.getInstance();
+                    tomorrowFajrCal.setTime(tomorrowFajrDate);
+                    int tomorrowFajrMinutes = tomorrowFajrCal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + tomorrowFajrCal.get(java.util.Calendar.MINUTE);
+                    remainingMinutes = (24 * 60) - currentMinutes + tomorrowFajrMinutes;
+                } else if (prayerMinutes <= currentMinutes) {
+                    // Tomorrow's prayer (general case)
+                    remainingMinutes = (24 * 60) - currentMinutes + prayerMinutes;
+                } else {
+                    // Today's prayer
+                    remainingMinutes = prayerMinutes - currentMinutes;
+                }
+                
+                int hours = remainingMinutes / 60;
+                int minutes = remainingMinutes % 60;
+                int seconds = 60 - currentSeconds;
+                
+                if (seconds == 60) {
+                    seconds = 0;
+                } else if (minutes > 0) {
+                    minutes--;
+                }
+                
+                String countdown = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                countdownText.setText(countdown);
+                
+            } catch (java.text.ParseException e) {
+                countdownText.setText("--:--:--");
+            }
+        }
     }
 }

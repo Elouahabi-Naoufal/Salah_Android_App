@@ -139,7 +139,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="8dp"
-                    android:text="02:15:30"
+                    android:text="--:--:--"
                     android:textSize="36sp"
                     android:textColor="@android:color/white"
                     android:fontFamily="sans-serif-light" />

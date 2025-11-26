@@ -112,4 +112,50 @@ public class PrayerTimesService {
         java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault());
         return dateFormat.format(new java.util.Date());
     }
+    
+    public static CompletableFuture<String> fetchTomorrowsFajr(City city) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String url = BASE_URL + city.getId() + "/city.html";
+                Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .timeout(10000)
+                    .get();
+
+                Elements tables = doc.select("table");
+                Element prayerTable = null;
+                for (Element table : tables) {
+                    Elements rows = table.select("tr");
+                    if (rows.size() > 2) { // Need at least header + today + tomorrow
+                        prayerTable = table;
+                        break;
+                    }
+                }
+                
+                if (prayerTable == null) {
+                    return "05:30"; // Fallback
+                }
+                
+                Elements rows = prayerTable.select("tr");
+                if (rows.size() < 3) {
+                    return "05:30"; // Fallback
+                }
+                
+                // Get tomorrow's row (third row: header, today, tomorrow)
+                Elements tomorrowCells = rows.get(2).select("td");
+                if (tomorrowCells.size() > 1) {
+                    String tomorrowFajr = tomorrowCells.get(1).text().trim();
+                    if (isValidTime(tomorrowFajr)) {
+                        return tomorrowFajr;
+                    }
+                }
+                
+                return "05:30"; // Fallback
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error fetching tomorrow's Fajr", e);
+                return "05:30"; // Fallback
+            }
+        });
+    }
 }
