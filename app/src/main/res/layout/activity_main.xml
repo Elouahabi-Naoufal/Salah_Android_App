@@ -30,16 +30,15 @@
                     android:layout_height="wrap_content"
                     android:text="Salah Times"
                     android:textSize="28sp"
-                    android:textColor="@color/dark_primary"
+                    android:textColor="@color/primary_green"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/location_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tangier, Morocco"
                     android:textSize="14sp"
-                    android:textColor="@color/dark_text_secondary" />
+                    android:textColor="@color/text_secondary" />
 
             </LinearLayout>
 
@@ -60,7 +59,7 @@
             android:layout_marginTop="16dp"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
-            app:cardBackgroundColor="@color/dark_card">
+            app:cardBackgroundColor="@color/card_background">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -75,7 +74,7 @@
                     android:layout_height="wrap_content"
                     android:text="14:30"
                     android:textSize="48sp"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/text_primary"
                     android:fontFamily="sans-serif-light" />
 
                 <TextView
@@ -84,7 +83,7 @@
                     android:layout_height="wrap_content"
                     android:text="Friday, January 15, 2024"
                     android:textSize="16sp"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/text_primary"
                     android:alpha="0.9" />
 
                 <TextView
@@ -93,7 +92,7 @@
                     android:layout_height="wrap_content"
                     android:text="5 Rajab 1445 AH"
                     android:textSize="16sp"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/text_secondary"
                     android:alpha="0.9" />
 
             </LinearLayout>
@@ -115,7 +114,7 @@
             android:layout_marginTop="16dp"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
-            app:cardBackgroundColor="@color/dark_primary">
+            app:cardBackgroundColor="@color/primary_green">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -129,7 +128,7 @@
                     android:layout_height="wrap_content"
                     android:text="NEXT PRAYER"
                     android:textSize="14sp"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
                     android:letterSpacing="0.1"
                     android:layout_gravity="center" />
@@ -142,7 +141,7 @@
                     android:layout_marginTop="8dp"
                     android:text="--:--:--"
                     android:textSize="36sp"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/white"
                     android:fontFamily="sans-serif-light" />
 
                 <TextView

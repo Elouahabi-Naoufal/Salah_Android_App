@@ -32,7 +32,8 @@ public class SettingsActivity extends AppCompatActivity {
         
         // City Setting
         addSettingItem(container, "●", "Default City", SettingsManager.getDefaultCity(), v -> {
-            startActivity(new Intent(this, CitySelectionActivity.class));
+            Intent intent = new Intent(this, CitySelectionActivity.class);
+            startActivityForResult(intent, 100);
         });
         
         addDivider(container);
@@ -164,6 +165,14 @@ public class SettingsActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100) {
+            recreate(); // Refresh settings to show new city
+        }
     }
     
     @Override

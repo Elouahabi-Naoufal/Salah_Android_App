@@ -37,6 +37,11 @@ public class MainActivity extends AppCompatActivity {
         // Apply theme
         ThemeManager.applyTheme();
         
+        // Hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+        
         setContentView(R.layout.activity_main);
         
 
@@ -64,6 +69,11 @@ public class MainActivity extends AppCompatActivity {
         hijriText = findViewById(R.id.hijri_text);
         countdownText = findViewById(R.id.countdown_text);
         prayerGrid = findViewById(R.id.prayer_grid);
+        
+        // Set current city name
+        TextView locationText = findViewById(R.id.location_text);
+        String cityName = SettingsManager.getDefaultCity();
+        locationText.setText(cityName + ", Morocco");
         
         // Setup settings button
         findViewById(R.id.settings_button).setOnClickListener(v -> {
@@ -225,6 +235,18 @@ public class MainActivity extends AppCompatActivity {
     }
     
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Update city name when returning from settings
+        TextView locationText = findViewById(R.id.location_text);
+        String cityName = SettingsManager.getDefaultCity();
+        locationText.setText(cityName + ", Morocco");
+        
+        // Reload prayer times for new city
+        loadPrayerTimes();
+    }
+    
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (handler != null && updateTimeRunnable != null) {
@@ -232,33 +254,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.view_menu, menu);
-        return true;
-    }
-    
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        
-        if (id == R.id.action_monthly_calendar) {
-            showFeatureUnavailable("Monthly Calendar");
-            return true;
-        } else if (id == R.id.action_weekly_schedule) {
-            showFeatureUnavailable("Weekly Schedule");
-            return true;
-        } else if (id == R.id.action_timezone_view) {
-            showFeatureUnavailable("Multiple Timezones");
-            return true;
-        } else if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
-            return true;
-        }
-        
-        return super.onOptionsItemSelected(item);
-    }
+
     
     private void refreshApp() {
         // Reset UI to loading state like app startup
