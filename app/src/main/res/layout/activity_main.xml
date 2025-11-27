@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp"
     android:background="@color/background_light">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
 
         <!-- Top Bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -28,37 +26,46 @@
                     android:id="@+id/app_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Salah Times"
-                    android:textSize="28sp"
+                    android:text="Prayer Times"
+                    android:textSize="32sp"
                     android:textColor="@color/primary_green"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="-0.02" />
 
                 <TextView
                     android:id="@+id/location_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_secondary" />
+                    android:textSize="16sp"
+                    android:textColor="@color/text_secondary"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginTop="2dp" />
 
             </LinearLayout>
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/settings_button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/circle_button"
-                android:src="@drawable/ic_settings"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                app:icon="@drawable/ic_settings"
+                app:iconSize="24dp"
+                app:iconTint="@color/text_secondary"
+                style="@style/Widget.Material3.Button.IconButton"
                 android:contentDescription="Settings" />
 
         </LinearLayout>
 
         <!-- Clock Card -->
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp"
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
             app:cardBackgroundColor="@color/card_background">
 
             <LinearLayout
@@ -73,9 +80,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="14:30"
-                    android:textSize="48sp"
+                    android:textSize="42sp"
                     android:textColor="@color/text_primary"
-                    android:fontFamily="sans-serif-light" />
+                    android:fontFamily="sans-serif-thin"
+                    android:letterSpacing="-0.02" />
 
                 <TextView
                     android:id="@+id/date_text"
@@ -84,90 +92,101 @@
                     android:text="Friday, January 15, 2024"
                     android:textSize="16sp"
                     android:textColor="@color/text_primary"
-                    android:alpha="0.9" />
+                    android:fontFamily="sans-serif"
+                    android:layout_marginTop="6dp" />
 
                 <TextView
                     android:id="@+id/hijri_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="5 Rajab 1445 AH"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_secondary"
-                    android:alpha="0.9" />
+                    android:fontFamily="sans-serif"
+                    android:layout_marginTop="3dp" />
 
             </LinearLayout>
 
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Prayer Times Grid -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/prayer_grid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:background="@color/background_light" />
 
         <!-- Next Prayer Card -->
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp"
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
             app:cardBackgroundColor="@color/primary_green">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="20dp"
+                android:gravity="center">
 
                 <TextView
                     android:id="@+id/next_prayer_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="NEXT PRAYER"
-                    android:textSize="14sp"
+                    android:textSize="11sp"
                     android:textColor="@color/white"
                     android:textStyle="bold"
-                    android:letterSpacing="0.1"
-                    android:layout_gravity="center" />
+                    android:letterSpacing="0.15"
+                    android:fontFamily="sans-serif-medium"
+                    android:alpha="0.9" />
 
                 <TextView
                     android:id="@+id/countdown_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
                     android:layout_marginTop="8dp"
                     android:text="--:--:--"
-                    android:textSize="36sp"
+                    android:textSize="32sp"
                     android:textColor="@color/white"
-                    android:fontFamily="sans-serif-light" />
+                    android:fontFamily="sans-serif-thin"
+                    android:letterSpacing="-0.02" />
 
                 <TextView
                     android:id="@+id/iqama_countdown"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="8dp"
-                    android:textSize="14sp"
-                    android:textColor="#FFD700" />
+                    android:layout_marginTop="6dp"
+                    android:textSize="13sp"
+                    android:textColor="@color/white"
+                    android:alpha="0.8"
+                    android:fontFamily="sans-serif" />
 
             </LinearLayout>
 
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Refresh Button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/refresh_button"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="↻ Refresh"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/primary_green"
-            android:padding="12dp" />
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Refresh Prayer Times"
+            android:textSize="14sp"
+            android:textColor="@color/primary_green"
+            android:fontFamily="sans-serif-medium"
+            app:icon="@android:drawable/ic_popup_sync"
+            app:iconTint="@color/primary_green"
+            app:iconGravity="textStart"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            app:strokeColor="@color/primary_green"
+            app:cornerRadius="12dp" />
 
-    </LinearLayout>
-
-</ScrollView>
+</LinearLayout>

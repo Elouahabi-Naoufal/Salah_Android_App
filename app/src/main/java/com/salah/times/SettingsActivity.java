@@ -66,7 +66,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void addSettingItem(LinearLayout container, String icon, String title, String subtitle, View.OnClickListener listener) {
         LinearLayout item = new LinearLayout(this);
         item.setOrientation(LinearLayout.HORIZONTAL);
-        item.setPadding(16, 16, 16, 16);
+        item.setPadding(24, 20, 24, 20);
         item.setGravity(android.view.Gravity.CENTER_VERTICAL);
         item.setClickable(true);
         item.setFocusable(true);
@@ -75,47 +75,70 @@ public class SettingsActivity extends AppCompatActivity {
         item.setBackgroundResource(outValue.resourceId);
         item.setOnClickListener(listener);
         
-        // Icon
+        // Icon container
+        LinearLayout iconContainer = new LinearLayout(this);
+        iconContainer.setLayoutParams(new LinearLayout.LayoutParams(48, 48));
+        iconContainer.setGravity(android.view.Gravity.CENTER);
+        
         TextView iconView = new TextView(this);
         iconView.setText(icon);
-        iconView.setTextSize(20);
-        iconView.setPadding(0, 0, 16, 0);
-        item.addView(iconView);
+        iconView.setTextSize(22);
+        iconView.setTextColor(getColor(R.color.primary_green));
+        iconContainer.addView(iconView);
+        item.addView(iconContainer);
         
         // Text container
         LinearLayout textContainer = new LinearLayout(this);
         textContainer.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+        textParams.setMarginStart(16);
         textContainer.setLayoutParams(textParams);
         
         TextView titleView = new TextView(this);
         titleView.setText(title);
-        titleView.setTextSize(16);
+        titleView.setTextSize(18);
         titleView.setTextColor(getColor(R.color.text_primary));
+        titleView.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
         textContainer.addView(titleView);
         
         TextView subtitleView = new TextView(this);
         subtitleView.setText(subtitle);
-        subtitleView.setTextSize(14);
+        subtitleView.setTextSize(15);
         subtitleView.setTextColor(getColor(R.color.text_secondary));
+        LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        subtitleParams.topMargin = 4;
+        subtitleView.setLayoutParams(subtitleParams);
         textContainer.addView(subtitleView);
         
         item.addView(textContainer);
         
         // Arrow
         TextView arrow = new TextView(this);
-        arrow.setText(">");
+        arrow.setText("›");
+        arrow.setTextSize(20);
         arrow.setTextColor(getColor(R.color.text_secondary));
+        arrow.setAlpha(0.6f);
         item.addView(arrow);
         
         container.addView(item);
     }
     
     private void addDivider(LinearLayout container) {
+        View spacer = new View(this);
+        spacer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 24));
+        container.addView(spacer);
+        
         View divider = new View(this);
-        divider.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
+        dividerParams.setMargins(24, 0, 24, 0);
+        divider.setLayoutParams(dividerParams);
         divider.setBackgroundColor(getColor(R.color.divider));
+        divider.setAlpha(0.3f);
         container.addView(divider);
+        
+        View spacer2 = new View(this);
+        spacer2.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 8));
+        container.addView(spacer2);
     }
     
     private String getThemeDescription() {
