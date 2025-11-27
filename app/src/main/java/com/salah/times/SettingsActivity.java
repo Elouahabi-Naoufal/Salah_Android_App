@@ -24,8 +24,6 @@ public class SettingsActivity extends AppCompatActivity {
     
     private void setupSettings() {
         LinearLayout container = findViewById(R.id.settings_container);
-        TextView currentCity = findViewById(R.id.current_city);
-        currentCity.setText(SettingsManager.getDefaultCity() + ", Morocco");
         
         // Language Setting
         addSettingItem(container, "◉", TranslationManager.tr("settings_items.language"), getLanguageDescription(), v -> showLanguageDialog());
@@ -34,7 +32,10 @@ public class SettingsActivity extends AppCompatActivity {
         addSettingItem(container, "◐", TranslationManager.tr("settings_items.theme"), getThemeDescription(), v -> showThemeDialog());
         
         // City Setting
-        addSettingItem(container, "●", TranslationManager.tr("settings_items.default_city"), SettingsManager.getDefaultCity(), v -> {
+        String currentCityEn = SettingsManager.getDefaultCity();
+        City currentCityObj = CitiesData.getCityByName(currentCityEn);
+        String cityDisplayName = currentCityObj.getName(TranslationManager.getCurrentLanguage());
+        addSettingItem(container, "●", TranslationManager.tr("settings_items.default_city"), cityDisplayName, v -> {
             Intent intent = new Intent(this, CitySelectionActivity.class);
             startActivityForResult(intent, 100);
         });
@@ -225,6 +226,8 @@ public class SettingsActivity extends AppCompatActivity {
             recreate(); // Refresh settings to show new city
         }
     }
+    
+
     
     @Override
     public boolean onSupportNavigateUp() {

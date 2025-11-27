@@ -131,14 +131,59 @@ public class MainActivity extends AppCompatActivity {
     
     private void updateClock() {
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
         
         Date now = new Date();
         clockText.setText(timeFormat.format(now));
-        dateText.setText(dateFormat.format(now));
+        
+        // Format date in current language
+        String formattedDate = formatDateInCurrentLanguage(now);
+        dateText.setText(formattedDate);
         
         // Update countdown in real-time
         updateLiveCountdown();
+    }
+    
+    private String formatDateInCurrentLanguage(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        
+        String dayName = TranslationManager.tr("days." + getDayKey(cal.get(java.util.Calendar.DAY_OF_WEEK)));
+        String monthName = TranslationManager.tr("months." + getMonthKey(cal.get(java.util.Calendar.MONTH)));
+        int dayOfMonth = cal.get(java.util.Calendar.DAY_OF_MONTH);
+        int year = cal.get(java.util.Calendar.YEAR);
+        
+        return dayName + ", " + monthName + " " + dayOfMonth + ", " + year;
+    }
+    
+    private String getDayKey(int dayOfWeek) {
+        switch (dayOfWeek) {
+            case java.util.Calendar.SUNDAY: return "sunday";
+            case java.util.Calendar.MONDAY: return "monday";
+            case java.util.Calendar.TUESDAY: return "tuesday";
+            case java.util.Calendar.WEDNESDAY: return "wednesday";
+            case java.util.Calendar.THURSDAY: return "thursday";
+            case java.util.Calendar.FRIDAY: return "friday";
+            case java.util.Calendar.SATURDAY: return "saturday";
+            default: return "sunday";
+        }
+    }
+    
+    private String getMonthKey(int month) {
+        switch (month) {
+            case java.util.Calendar.JANUARY: return "january";
+            case java.util.Calendar.FEBRUARY: return "february";
+            case java.util.Calendar.MARCH: return "march";
+            case java.util.Calendar.APRIL: return "april";
+            case java.util.Calendar.MAY: return "may";
+            case java.util.Calendar.JUNE: return "june";
+            case java.util.Calendar.JULY: return "july";
+            case java.util.Calendar.AUGUST: return "august";
+            case java.util.Calendar.SEPTEMBER: return "september";
+            case java.util.Calendar.OCTOBER: return "october";
+            case java.util.Calendar.NOVEMBER: return "november";
+            case java.util.Calendar.DECEMBER: return "december";
+            default: return "january";
+        }
     }
     
     private void loadPrayerTimes() {

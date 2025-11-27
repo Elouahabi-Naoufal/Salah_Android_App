@@ -38,7 +38,7 @@ public class PrayerAdapter extends RecyclerView.Adapter<PrayerAdapter.PrayerView
     @Override
     public void onBindViewHolder(@NonNull PrayerViewHolder holder, int position) {
         PrayerItem prayer = prayers.get(position);
-        holder.nameText.setText(TranslationManager.tr(prayer.name.toLowerCase()));
+        holder.nameText.setText(TranslationManager.tr("prayers." + prayer.name.toLowerCase()));
         holder.timeText.setText(prayer.time);
         
         // Set prayer icon
