@@ -30,13 +30,13 @@ public class CitySelectionActivity extends AppCompatActivity {
     
     private void initViews() {
         TextView welcomeText = findViewById(R.id.welcome_text);
-        welcomeText.setText("🕌 " + TranslationManager.tr("welcome"));
+        welcomeText.setText(TranslationManager.tr("missing_strings.welcome_with_icon"));
         
         TextView instructionText = findViewById(R.id.instruction_text);
-        instructionText.setText(TranslationManager.tr("select_city"));
+        instructionText.setText(TranslationManager.tr("missing_strings.select_city_instruction"));
         
         searchInput = findViewById(R.id.search_input);
-        searchInput.setHint(TranslationManager.tr("search_city"));
+        searchInput.setHint(TranslationManager.tr("city_selection.search_city"));
         
         cityList = findViewById(R.id.city_list);
         
@@ -45,7 +45,7 @@ public class CitySelectionActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(v -> finish());
         
         Button selectButton = findViewById(R.id.select_button);
-        selectButton.setText(TranslationManager.tr("set_default"));
+        selectButton.setText(TranslationManager.tr("missing_strings.set_as_default"));
         selectButton.setOnClickListener(v -> selectCity());
     }
     

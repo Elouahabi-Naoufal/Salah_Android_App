@@ -1,16 +1,13 @@
 package com.salah.times;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -50,13 +47,17 @@ public class SettingsAdapter extends FragmentStateAdapter {
             
             // Theme Selection
             TextView themeLabel = new TextView(getContext());
-            themeLabel.setText("Theme");
+            themeLabel.setText(TranslationManager.tr("settings_items.theme"));
             themeLabel.setTextSize(16);
             themeLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(themeLabel);
             
             Spinner themeSpinner = new Spinner(getContext());
-            String[] themes = {"Auto (System)", "Light Mode", "Dark Mode"};
+            String[] themes = {
+                TranslationManager.tr("settings_items.theme_auto"), 
+                TranslationManager.tr("settings_items.theme_light"), 
+                TranslationManager.tr("settings_items.theme_dark")
+            };
             String[] themeCodes = {"auto", "light", "dark"};
             ArrayAdapter<String> themeAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, themes);
@@ -76,7 +77,7 @@ public class SettingsAdapter extends FragmentStateAdapter {
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     String selectedTheme = themeCodes[position];
                     SettingsManager.setTheme(selectedTheme);
-                    Toast.makeText(getContext(), "Theme changed to " + themes[position] + ". Restart app to apply.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), TranslationManager.tr("messages.theme_changed"), Toast.LENGTH_LONG).show();
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {}
@@ -84,14 +85,9 @@ public class SettingsAdapter extends FragmentStateAdapter {
             
             layout.addView(themeSpinner);
             
-            // Spacing
-            View space0 = new View(getContext());
-            space0.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 32));
-            layout.addView(space0);
-            
             // City Selection
             TextView cityLabel = new TextView(getContext());
-            cityLabel.setText("Default City");
+            cityLabel.setText(TranslationManager.tr("settings_items.default_city"));
             cityLabel.setTextSize(16);
             cityLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(cityLabel);
@@ -120,7 +116,7 @@ public class SettingsAdapter extends FragmentStateAdapter {
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     String selectedCity = cityNames[position];
                     SettingsManager.setDefaultCity(selectedCity);
-                    Toast.makeText(getContext(), "City changed to " + selectedCity + ". Restart app to see changes.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), TranslationManager.tr("messages.city_changed"), Toast.LENGTH_LONG).show();
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {}
@@ -130,21 +126,21 @@ public class SettingsAdapter extends FragmentStateAdapter {
             
             // Auto Update Toggle
             CheckBox autoUpdateCheck = new CheckBox(getContext());
-            autoUpdateCheck.setText("Auto Update Prayer Times Daily");
+            autoUpdateCheck.setText(TranslationManager.tr("missing_strings.auto_update_daily_full"));
             autoUpdateCheck.setChecked(SettingsManager.getAutoUpdate());
             autoUpdateCheck.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 SettingsManager.setAutoUpdate(isChecked);
-                String status = isChecked ? "enabled" : "disabled";
-                Toast.makeText(getContext(), "Auto update " + status, Toast.LENGTH_SHORT).show();
+                String status = isChecked ? TranslationManager.tr("missing_strings.enabled_status") : TranslationManager.tr("missing_strings.disabled_status");
+                Toast.makeText(getContext(), TranslationManager.tr("messages.auto_update_enabled"), Toast.LENGTH_SHORT).show();
             });
             layout.addView(autoUpdateCheck);
             
             // Restart App Button
             Button restartButton = new Button(getContext());
-            restartButton.setText("Restart App");
+            restartButton.setText(TranslationManager.tr("missing_strings.restart_app_simple"));
             restartButton.setTextColor(Color.WHITE);
             restartButton.setOnClickListener(v -> {
-                Toast.makeText(getContext(), "Restarting app...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), TranslationManager.tr("messages.restarting"), Toast.LENGTH_SHORT).show();
                 
                 Intent restartIntent = new Intent(getContext(), MainActivity.class);
                 restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -185,13 +181,13 @@ public class SettingsAdapter extends FragmentStateAdapter {
             layout.setPadding(16, 16, 16, 16);
             
             TextView title = new TextView(getContext());
-            title.setText("Iqama Delay Settings");
+            title.setText(TranslationManager.tr("missing_strings.iqama_delay_settings_title"));
             title.setTextSize(18);
             title.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(title);
             
             TextView description = new TextView(getContext());
-            description.setText("Set the delay time between Adhan and Iqama for each prayer");
+            description.setText(TranslationManager.tr("missing_strings.iqama_delay_description_full"));
             description.setTextSize(14);
             description.setPadding(0, 8, 0, 24);
             layout.addView(description);
@@ -208,7 +204,7 @@ public class SettingsAdapter extends FragmentStateAdapter {
                 prayerLayout.setGravity(android.view.Gravity.CENTER_VERTICAL);
                 
                 TextView prayerLabel = new TextView(getContext());
-                prayerLabel.setText(icons[i] + " " + prayer);
+                prayerLabel.setText(icons[i] + " " + TranslationManager.tr("prayers." + prayer.toLowerCase()));
                 prayerLabel.setTextSize(16);
                 prayerLabel.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
                 prayerLayout.addView(prayerLabel);
@@ -216,7 +212,7 @@ public class SettingsAdapter extends FragmentStateAdapter {
                 Spinner delaySpinner = new Spinner(getContext());
                 String[] delays = new String[61];
                 for (int j = 0; j <= 60; j++) {
-                    delays[j] = j + " min";
+                    delays[j] = j + TranslationManager.tr("missing_strings.min_suffix");
                 }
                 ArrayAdapter<String> delayAdapter = new ArrayAdapter<>(getContext(),
                     android.R.layout.simple_spinner_item, delays);
@@ -228,7 +224,7 @@ public class SettingsAdapter extends FragmentStateAdapter {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         iqamaManager.setIqamaDelay(prayer, position);
-                        Toast.makeText(getContext(), prayer + " Iqama delay set to " + position + " minutes", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), TranslationManager.tr("prayers." + prayer.toLowerCase()) + " " + TranslationManager.tr("iqama.iqama_delay") + " " + position + " " + TranslationManager.tr("notifications.minutes"), Toast.LENGTH_SHORT).show();
                     }
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {}
@@ -239,7 +235,7 @@ public class SettingsAdapter extends FragmentStateAdapter {
             }
             
             TextView infoText = new TextView(getContext());
-            infoText.setText("Iqama is the second call to prayer, indicating that the prayer is about to begin. Set appropriate delays based on your mosque's schedule.");
+            infoText.setText(TranslationManager.tr("missing_strings.iqama_info_full"));
             infoText.setTextSize(12);
             layout.addView(infoText);
             
@@ -256,18 +252,18 @@ public class SettingsAdapter extends FragmentStateAdapter {
             layout.setPadding(16, 16, 16, 16);
             
             TextView title = new TextView(getContext());
-            title.setText("Notification Settings");
+            title.setText(TranslationManager.tr("missing_strings.notification_settings_title"));
             title.setTextSize(18);
             title.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(title);
             
             CheckBox notificationsEnabled = new CheckBox(getContext());
-            notificationsEnabled.setText("Enable Prayer Time Notifications");
+            notificationsEnabled.setText(TranslationManager.tr("missing_strings.enable_notifications"));
             notificationsEnabled.setChecked(SettingsManager.getNotificationsEnabled());
             notificationsEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 SettingsManager.setNotificationsEnabled(isChecked);
-                String status = isChecked ? "enabled" : "disabled";
-                Toast.makeText(getContext(), "Notifications " + status, Toast.LENGTH_SHORT).show();
+                String status = isChecked ? TranslationManager.tr("messages.notifications_enabled") : TranslationManager.tr("messages.notifications_disabled");
+                Toast.makeText(getContext(), status, Toast.LENGTH_SHORT).show();
                 
                 if (isChecked) {
                     Intent serviceIntent = new Intent(getContext(), PrayerNotificationService.class);
@@ -280,7 +276,7 @@ public class SettingsAdapter extends FragmentStateAdapter {
             layout.addView(notificationsEnabled);
             
             TextView infoText = new TextView(getContext());
-            infoText.setText("When enabled, you'll receive:\n\n• Current prayer time in notification bar\n• Countdown to next prayer\n• Persistent notification with all prayer times\n• Real-time updates");
+            infoText.setText(TranslationManager.tr("missing_strings.notifications_info"));
             infoText.setTextSize(14);
             layout.addView(infoText);
             

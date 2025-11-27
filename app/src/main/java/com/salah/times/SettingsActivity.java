@@ -16,7 +16,7 @@ public class SettingsActivity extends AppCompatActivity {
         
         setContentView(R.layout.activity_settings);
         
-        getSupportActionBar().setTitle("Settings");
+        getSupportActionBar().setTitle(TranslationManager.tr("settings"));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         
         setupSettings();
@@ -25,13 +25,16 @@ public class SettingsActivity extends AppCompatActivity {
     private void setupSettings() {
         LinearLayout container = findViewById(R.id.settings_container);
         TextView currentCity = findViewById(R.id.current_city);
-        currentCity.setText(SettingsManager.getDefaultCity());
+        currentCity.setText(SettingsManager.getDefaultCity() + ", Morocco");
+        
+        // Language Setting
+        addSettingItem(container, "◉", TranslationManager.tr("settings_items.language"), getLanguageDescription(), v -> showLanguageDialog());
         
         // Theme Setting
-        addSettingItem(container, "◐", "Theme", getThemeDescription(), v -> showThemeDialog());
+        addSettingItem(container, "◐", TranslationManager.tr("settings_items.theme"), getThemeDescription(), v -> showThemeDialog());
         
         // City Setting
-        addSettingItem(container, "●", "Default City", SettingsManager.getDefaultCity(), v -> {
+        addSettingItem(container, "●", TranslationManager.tr("settings_items.default_city"), SettingsManager.getDefaultCity(), v -> {
             Intent intent = new Intent(this, CitySelectionActivity.class);
             startActivityForResult(intent, 100);
         });
@@ -39,28 +42,28 @@ public class SettingsActivity extends AppCompatActivity {
         addDivider(container);
         
         // Notifications
-        addSettingItem(container, "◉", "Notifications", 
-            SettingsManager.getNotificationsEnabled() ? "Enabled" : "Disabled", 
+        addSettingItem(container, "◉", TranslationManager.tr("settings_items.notifications"), 
+            SettingsManager.getNotificationsEnabled() ? TranslationManager.tr("settings_items.notifications_enabled") : TranslationManager.tr("settings_items.notifications_disabled"), 
             v -> toggleNotifications());
         
         // Auto Update
-        addSettingItem(container, "↻", "Auto Update", 
-            SettingsManager.getAutoUpdate() ? "Daily" : "Manual", 
+        addSettingItem(container, "↻", TranslationManager.tr("settings_items.auto_update"), 
+            SettingsManager.getAutoUpdate() ? TranslationManager.tr("settings_items.auto_update_daily") : TranslationManager.tr("settings_items.auto_update_manual"), 
             v -> toggleAutoUpdate());
         
         addDivider(container);
         
         // Iqama Settings
-        addSettingItem(container, "◷", "Iqama Delays", "Configure prayer delays", v -> {
+        addSettingItem(container, "◷", TranslationManager.tr("settings_items.iqama_delays"), TranslationManager.tr("settings_items.iqama_description"), v -> {
             // Show iqama dialog
         });
         
         addDivider(container);
         
         // Actions
-        addSettingItem(container, "↻", "Update All Cities", "Refresh prayer data", v -> updateAllCities());
-        addSettingItem(container, "◯", "Clear Cache", "Reset stored data", v -> clearCache());
-        addSettingItem(container, "↻", "Restart App", "Apply changes", v -> restartApp());
+        addSettingItem(container, "↻", TranslationManager.tr("settings_items.update_all_cities"), TranslationManager.tr("settings_items.update_description"), v -> updateAllCities());
+        addSettingItem(container, "◯", TranslationManager.tr("settings_items.clear_cache"), TranslationManager.tr("settings_items.cache_description"), v -> clearCache());
+        addSettingItem(container, "↻", TranslationManager.tr("settings_items.restart_app"), TranslationManager.tr("settings_items.restart_description"), v -> restartApp());
     }
     
     private void addSettingItem(LinearLayout container, String icon, String title, String subtitle, View.OnClickListener listener) {
@@ -141,20 +144,45 @@ public class SettingsActivity extends AppCompatActivity {
         container.addView(spacer2);
     }
     
+    private String getLanguageDescription() {
+        return TranslationManager.getLanguageName(SettingsManager.getLanguage());
+    }
+    
     private String getThemeDescription() {
         switch (SettingsManager.getTheme()) {
-            case "light": return "Light";
-            case "dark": return "Dark";
-            default: return "Auto";
+            case "light": return TranslationManager.tr("settings_items.theme_light");
+            case "dark": return TranslationManager.tr("settings_items.theme_dark");
+            default: return TranslationManager.tr("settings_items.theme_auto");
         }
     }
     
+    private void showLanguageDialog() {
+        String[] languages = TranslationManager.getAvailableLanguages();
+        String[] languageNames = new String[languages.length];
+        
+        for (int i = 0; i < languages.length; i++) {
+            languageNames[i] = TranslationManager.getLanguageName(languages[i]);
+        }
+        
+        new android.app.AlertDialog.Builder(this)
+            .setTitle(TranslationManager.tr("missing_strings.choose_language"))
+            .setItems(languageNames, (dialog, which) -> {
+                SettingsManager.setLanguage(languages[which]);
+                recreate();
+            })
+            .show();
+    }
+    
     private void showThemeDialog() {
-        String[] themes = {"Auto", "Light", "Dark"};
+        String[] themes = {
+            TranslationManager.tr("settings_items.theme_auto"),
+            TranslationManager.tr("settings_items.theme_light"), 
+            TranslationManager.tr("settings_items.theme_dark")
+        };
         String[] codes = {"auto", "light", "dark"};
         
         new android.app.AlertDialog.Builder(this)
-            .setTitle("Choose Theme")
+            .setTitle(TranslationManager.tr("missing_strings.choose_theme"))
             .setItems(themes, (dialog, which) -> {
                 SettingsManager.setTheme(codes[which]);
                 recreate();
@@ -175,12 +203,12 @@ public class SettingsActivity extends AppCompatActivity {
     }
     
     private void updateAllCities() {
-        Toast.makeText(this, "Updating all cities...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, TranslationManager.tr("missing_strings.updating_cities"), Toast.LENGTH_SHORT).show();
     }
     
     private void clearCache() {
         StorageManager.clearAllCityData();
-        Toast.makeText(this, "Cache cleared", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, TranslationManager.tr("missing_strings.cache_cleared_simple"), Toast.LENGTH_SHORT).show();
     }
     
     private void restartApp() {

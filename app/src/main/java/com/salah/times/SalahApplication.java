@@ -31,7 +31,8 @@ public class SalahApplication extends Application {
     }
     
     private void initializeApplication() {
-        translationManager = new TranslationManager();
+        // Initialize TranslationManager
+        TranslationManager.init(this);
         
         // Set application metadata
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

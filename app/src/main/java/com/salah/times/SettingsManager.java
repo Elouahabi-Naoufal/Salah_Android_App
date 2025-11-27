@@ -36,6 +36,7 @@ public class SettingsManager {
             settings.put("language", language);
             settings.put("last_modified", getCurrentTimestamp());
             saveSettings(settings);
+            TranslationManager.setLanguage(language);
         } catch (Exception e) {
             e.printStackTrace();
         }

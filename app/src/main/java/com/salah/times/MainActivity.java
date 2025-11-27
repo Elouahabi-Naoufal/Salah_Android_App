@@ -70,10 +70,19 @@ public class MainActivity extends AppCompatActivity {
         countdownText = findViewById(R.id.countdown_text);
         prayerGrid = findViewById(R.id.prayer_grid);
         
-        // Set current city name
+        // Set current city name and app title
+        TextView appTitle = findViewById(R.id.app_title);
+        appTitle.setText(TranslationManager.tr("app_name"));
+        
         TextView locationText = findViewById(R.id.location_text);
         String cityName = SettingsManager.getDefaultCity();
         locationText.setText(cityName + ", Morocco");
+        
+        TextView nextPrayerLabel = findViewById(R.id.next_prayer_label);
+        nextPrayerLabel.setText(TranslationManager.tr("next_prayer"));
+        
+        Button refreshButton = findViewById(R.id.refresh_button);
+        refreshButton.setText(TranslationManager.tr("refresh"));
         
         // Setup settings button
         findViewById(R.id.settings_button).setOnClickListener(v -> {
@@ -209,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
             .exceptionally(throwable -> {
                 runOnUiThread(() -> {
                     if (hijriText != null) {
-                        hijriText.setText(TranslationManager.tr("hijri_unavailable"));
+                        hijriText.setText(TranslationManager.tr("hijri.hijri_unavailable"));
                     }
                 });
                 return null;
@@ -237,10 +246,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Update city name when returning from settings
+        // Update all text when returning from settings (language may have changed)
+        TextView appTitle = findViewById(R.id.app_title);
+        appTitle.setText(TranslationManager.tr("app_name"));
+        
         TextView locationText = findViewById(R.id.location_text);
         String cityName = SettingsManager.getDefaultCity();
         locationText.setText(cityName + ", Morocco");
+        
+        TextView nextPrayerLabel = findViewById(R.id.next_prayer_label);
+        nextPrayerLabel.setText(TranslationManager.tr("next_prayer"));
+        
+        Button refreshButton = findViewById(R.id.refresh_button);
+        refreshButton.setText(TranslationManager.tr("refresh"));
         
         // Reload prayer times for new city
         loadPrayerTimes();
@@ -271,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
         // Reload everything
         loadPrayerTimes();
         
-        Toast.makeText(this, "Refreshing prayer times...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, TranslationManager.tr("messages.refreshing"), Toast.LENGTH_SHORT).show();
     }
     
     private void showFeatureUnavailable(String featureName) {
