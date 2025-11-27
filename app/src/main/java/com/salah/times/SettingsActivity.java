@@ -47,10 +47,7 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsManager.getNotificationsEnabled() ? TranslationManager.tr("settings_items.notifications_enabled") : TranslationManager.tr("settings_items.notifications_disabled"), 
             v -> toggleNotifications());
         
-        // Auto Update
-        addSettingItem(container, "↻", TranslationManager.tr("settings_items.auto_update"), 
-            SettingsManager.getAutoUpdate() ? TranslationManager.tr("settings_items.auto_update_daily") : TranslationManager.tr("settings_items.auto_update_manual"), 
-            v -> toggleAutoUpdate());
+
         
         addDivider(container);
         
@@ -197,11 +194,7 @@ public class SettingsActivity extends AppCompatActivity {
         recreate();
     }
     
-    private void toggleAutoUpdate() {
-        boolean enabled = !SettingsManager.getAutoUpdate();
-        SettingsManager.setAutoUpdate(enabled);
-        recreate();
-    }
+
     
     private void updateAllCities() {
         Toast.makeText(this, TranslationManager.tr("missing_strings.updating_cities"), Toast.LENGTH_SHORT).show();
