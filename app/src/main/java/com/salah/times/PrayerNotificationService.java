@@ -84,8 +84,7 @@ public class PrayerNotificationService extends Service {
     }
     
     private void loadCurrentPrayerTimes() {
-        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
-        City defaultCity = CitiesData.getCityByName(prefsManager.getDefaultCity());
+        City defaultCity = CitiesData.getCityByName(SettingsManager.getDefaultCity());
         
         if (defaultCity != null) {
             PrayerTimeWorker worker = new PrayerTimeWorker(this);

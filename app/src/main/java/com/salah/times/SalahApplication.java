@@ -13,7 +13,6 @@ public class SalahApplication extends Application {
     private static final String KEY_APP_VERSION = "app_version";
     
     private static SalahApplication instance;
-    private SharedPrefsManager prefsManager;
     private TranslationManager translationManager;
     private AppLifecycleManager lifecycleManager;
     
@@ -32,7 +31,6 @@ public class SalahApplication extends Application {
     }
     
     private void initializeApplication() {
-        prefsManager = new SharedPrefsManager(this);
         translationManager = new TranslationManager();
         
         // Set application metadata
@@ -54,19 +52,19 @@ public class SalahApplication extends Application {
             .apply();
         
         // Initialize default settings
-        prefsManager.setDefaultCity("Casablanca");
-        prefsManager.setLanguage("en");
+        SettingsManager.setDefaultCity("Casablanca");
+        SettingsManager.setLanguage("en");
         
         Log.d(TAG, "First run setup completed");
     }
     
     private void setupConfiguration() {
         // Load saved language preference
-        String savedLanguage = prefsManager.getLanguage();
+        String savedLanguage = SettingsManager.getLanguage();
         TranslationManager.setLanguage(savedLanguage);
         
         Log.d(TAG, "Configuration loaded - Language: " + savedLanguage + 
-                   ", City: " + prefsManager.getDefaultCity());
+                   ", City: " + SettingsManager.getDefaultCity());
     }
     
     private void initializeTranslations() {
@@ -99,9 +97,7 @@ public class SalahApplication extends Application {
         return instance;
     }
     
-    public SharedPrefsManager getPrefsManager() {
-        return prefsManager;
-    }
+
     
     public boolean isFirstRun() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

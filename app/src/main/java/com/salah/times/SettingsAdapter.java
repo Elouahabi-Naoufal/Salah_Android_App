@@ -12,12 +12,10 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import java.util.List;
 
 public class SettingsAdapter extends FragmentStateAdapter {
-    private SharedPrefsManager prefsManager;
     private IqamaManager iqamaManager;
     
-    public SettingsAdapter(FragmentActivity activity, SharedPrefsManager prefsManager, IqamaManager iqamaManager) {
+    public SettingsAdapter(FragmentActivity activity, IqamaManager iqamaManager) {
         super(activity);
-        this.prefsManager = prefsManager;
         this.iqamaManager = iqamaManager;
     }
     
@@ -25,10 +23,10 @@ public class SettingsAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         switch (position) {
-            case 0: return new GeneralSettingsFragment(prefsManager);
+            case 0: return new GeneralSettingsFragment();
             case 1: return new IqamaSettingsFragment(iqamaManager);
             case 2: return new NotificationSettingsFragment();
-            default: return new GeneralSettingsFragment(prefsManager);
+            default: return new GeneralSettingsFragment();
         }
     }
     
@@ -38,10 +36,8 @@ public class SettingsAdapter extends FragmentStateAdapter {
     }
     
     public static class GeneralSettingsFragment extends Fragment {
-        private SharedPrefsManager prefsManager;
         
-        public GeneralSettingsFragment(SharedPrefsManager prefsManager) {
-            this.prefsManager = prefsManager;
+        public GeneralSettingsFragment() {
         }
         
         @Override
@@ -57,10 +53,31 @@ public class SettingsAdapter extends FragmentStateAdapter {
             layout.addView(langLabel);
             
             Spinner langSpinner = new Spinner(getContext());
+            String[] languages = {"English", "العربية", "Français"};
+            String[] langCodes = {"en", "ar", "fr"};
             ArrayAdapter<String> langAdapter = new ArrayAdapter<>(getContext(), 
-                android.R.layout.simple_spinner_item, new String[]{"English", "العربية", "Français"});
+                android.R.layout.simple_spinner_item, languages);
             langAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             langSpinner.setAdapter(langAdapter);
+            
+            // Set current language
+            String currentLang = SettingsManager.getLanguage();
+            for (int i = 0; i < langCodes.length; i++) {
+                if (langCodes[i].equals(currentLang)) {
+                    langSpinner.setSelection(i);
+                    break;
+                }
+            }
+            
+            langSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    SettingsManager.setLanguage(langCodes[position]);
+                }
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {}
+            });
+            
             layout.addView(langSpinner);
             
             // City selection
@@ -80,7 +97,70 @@ public class SettingsAdapter extends FragmentStateAdapter {
                 android.R.layout.simple_spinner_item, cityNames);
             cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             citySpinner.setAdapter(cityAdapter);
+            
+            // Set current city
+            String currentCity = SettingsManager.getDefaultCity();
+            for (int i = 0; i < cityNames.length; i++) {
+                if (cityNames[i].equals(currentCity)) {
+                    citySpinner.setSelection(i);
+                    break;
+                }
+            }
+            
+            citySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    SettingsManager.setDefaultCity(cityNames[position]);
+                }
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {}
+            });
+            
             layout.addView(citySpinner);
+            
+            // Theme selection
+            TextView themeLabel = new TextView(getContext());
+            themeLabel.setText("Theme");
+            themeLabel.setTextSize(16);
+            themeLabel.setPadding(0, 32, 0, 8);
+            layout.addView(themeLabel);
+            
+            Spinner themeSpinner = new Spinner(getContext());
+            String[] themes = {"Auto", "Light", "Dark"};
+            String[] themeCodes = {"auto", "light", "dark"};
+            ArrayAdapter<String> themeAdapter = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_spinner_item, themes);
+            themeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            themeSpinner.setAdapter(themeAdapter);
+            
+            String currentTheme = SettingsManager.getTheme();
+            for (int i = 0; i < themeCodes.length; i++) {
+                if (themeCodes[i].equals(currentTheme)) {
+                    themeSpinner.setSelection(i);
+                    break;
+                }
+            }
+            
+            themeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    SettingsManager.setTheme(themeCodes[position]);
+                }
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {}
+            });
+            
+            layout.addView(themeSpinner);
+            
+            // Auto update toggle
+            CheckBox autoUpdateCheck = new CheckBox(getContext());
+            autoUpdateCheck.setText("Auto Update Prayer Times");
+            autoUpdateCheck.setChecked(SettingsManager.getAutoUpdate());
+            autoUpdateCheck.setPadding(0, 32, 0, 0);
+            autoUpdateCheck.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                SettingsManager.setAutoUpdate(isChecked);
+            });
+            layout.addView(autoUpdateCheck);
             
             return layout;
         }
@@ -152,15 +232,14 @@ public class SettingsAdapter extends FragmentStateAdapter {
             title.setTextSize(18);
             layout.addView(title);
             
-            CheckBox soundEnabled = new CheckBox(getContext());
-            soundEnabled.setText("Enable Sound");
-            soundEnabled.setChecked(true);
-            layout.addView(soundEnabled);
-            
-            CheckBox vibrationEnabled = new CheckBox(getContext());
-            vibrationEnabled.setText("Enable Vibration");
-            vibrationEnabled.setChecked(true);
-            layout.addView(vibrationEnabled);
+            CheckBox notificationsEnabled = new CheckBox(getContext());
+            notificationsEnabled.setText("Enable Notifications");
+            notificationsEnabled.setChecked(SettingsManager.getNotificationsEnabled());
+            notificationsEnabled.setPadding(0, 16, 0, 0);
+            notificationsEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                SettingsManager.setNotificationsEnabled(isChecked);
+            });
+            layout.addView(notificationsEnabled);
             
             return layout;
         }

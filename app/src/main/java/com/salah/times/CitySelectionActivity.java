@@ -15,14 +15,10 @@ public class CitySelectionActivity extends AppCompatActivity {
     private ArrayAdapter<String> adapter;
     private List<City> allCities;
     private List<String> displayCities;
-    private SharedPrefsManager prefsManager;
-    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_city_selection);
-        
-        prefsManager = new SharedPrefsManager(this);
         initViews();
         setupCityList();
     }
@@ -110,7 +106,7 @@ public class CitySelectionActivity extends AppCompatActivity {
             // Find the actual city object
             for (City city : allCities) {
                 if (city.getName(TranslationManager.getCurrentLanguage()).equals(selectedCityName)) {
-                    prefsManager.setDefaultCity(city.getNameEn());
+                    SettingsManager.setDefaultCity(city.getNameEn());
                     break;
                 }
             }

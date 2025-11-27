@@ -11,7 +11,6 @@ import java.util.List;
 public class SettingsActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
-    private SharedPrefsManager prefsManager;
     private IqamaManager iqamaManager;
     
     @Override
@@ -19,7 +18,6 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         
-        prefsManager = new SharedPrefsManager(this);
         iqamaManager = new IqamaManager(this);
         
         initViews();
@@ -35,7 +33,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
     
     private void setupTabs() {
-        SettingsAdapter adapter = new SettingsAdapter(this, prefsManager, iqamaManager);
+        SettingsAdapter adapter = new SettingsAdapter(this, iqamaManager);
         viewPager.setAdapter(adapter);
         
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {

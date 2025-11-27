@@ -43,8 +43,7 @@ public class MainActivity extends AppCompatActivity {
         loadPrayerTimes();
         
         // Check if first time setup needed
-        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
-        if (prefsManager.getDefaultCity().equals("Casablanca") && !hasUserSelectedCity()) {
+        if (SettingsManager.getDefaultCity().equals("Casablanca") && !hasUserSelectedCity()) {
             startCitySelection();
         }
         
@@ -118,8 +117,7 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void loadPrayerTimes() {
-        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
-        City defaultCity = CitiesData.getCityByName(prefsManager.getDefaultCity());
+        City defaultCity = CitiesData.getCityByName(SettingsManager.getDefaultCity());
         if (defaultCity != null) {
             PrayerTimeWorker worker = new PrayerTimeWorker(this);
             worker.loadPrayerTimes(defaultCity, new PrayerTimeWorker.PrayerTimeCallback() {
@@ -145,8 +143,7 @@ public class MainActivity extends AppCompatActivity {
         this.currentPrayerTimes = prayerTimes;
         
         // Fetch tomorrow's Fajr for countdown calculation
-        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
-        City defaultCity = CitiesData.getCityByName(prefsManager.getDefaultCity());
+        City defaultCity = CitiesData.getCityByName(SettingsManager.getDefaultCity());
         if (defaultCity != null) {
             PrayerTimesService.fetchTomorrowsFajr(defaultCity)
                 .thenAccept(fajrTime -> {
@@ -279,9 +276,7 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private boolean hasUserSelectedCity() {
-        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
-        return !prefsManager.getDefaultCity().equals("Casablanca") || 
-               getSharedPreferences("app_prefs", MODE_PRIVATE).getBoolean("city_selected", false);
+        return !SettingsManager.getDefaultCity().equals("Casablanca");
     }
     
     private void startCitySelection() {
