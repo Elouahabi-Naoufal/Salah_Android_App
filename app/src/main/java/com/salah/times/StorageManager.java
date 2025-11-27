@@ -172,6 +172,29 @@ public class StorageManager {
         }
     }
     
+    public static void clearAllCityData() {
+        try {
+            if (CITIES_DIR.exists()) {
+                File[] files = CITIES_DIR.listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        if (file.getName().endsWith(".json")) {
+                            file.delete();
+                        }
+                    }
+                }
+            }
+            
+            // Also clear last update
+            File updateFile = new File(CONFIG_DIR, "last_update.json");
+            if (updateFile.exists()) {
+                updateFile.delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     private static String getCurrentTimestamp() {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(new Date());
     }

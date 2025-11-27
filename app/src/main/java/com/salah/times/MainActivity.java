@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,7 +33,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Apply theme
+        ThemeManager.applyTheme();
+        
         setContentView(R.layout.activity_main);
+        
+
         
         // Handle single instance
         SingleInstanceManager.handleSingleInstance(this);
@@ -288,6 +295,8 @@ public class MainActivity extends AppCompatActivity {
         Intent serviceIntent = new Intent(this, PrayerNotificationService.class);
         startForegroundService(serviceIntent);
     }
+    
+
     
     private boolean isAfterIsha(PrayerTimes prayerTimes) {
         java.util.Calendar now = java.util.Calendar.getInstance();

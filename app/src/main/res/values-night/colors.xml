@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_green">@color/dark_primary</color>
+    <color name="primary_dark">@color/dark_primary_variant</color>
+    <color name="background_light">@color/dark_background</color>
+    <color name="card_background">@color/dark_card</color>
+    <color name="text_primary">@color/dark_text_primary</color>
+    <color name="text_secondary">@color/dark_text_secondary</color>
+</resources>

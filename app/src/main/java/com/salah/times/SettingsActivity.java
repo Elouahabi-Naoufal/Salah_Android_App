@@ -1,6 +1,7 @@
 package com.salah.times;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
@@ -16,6 +17,10 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Apply theme
+        ThemeManager.applyTheme();
+        
         setContentView(R.layout.activity_settings);
         
         iqamaManager = new IqamaManager(this);

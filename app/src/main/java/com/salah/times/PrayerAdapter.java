@@ -46,13 +46,9 @@ public class PrayerAdapter extends RecyclerView.Adapter<PrayerAdapter.PrayerView
         holder.iconText.setText(icon);
         
         if (prayer.isNext) {
-            holder.nameText.setTextColor(0xFF66BB6A); // Green for next prayer
-            holder.timeText.setTextColor(0xFF66BB6A);
-            holder.cardView.setCardBackgroundColor(0xFF2D5A27); // Darker green background
-        } else {
-            holder.nameText.setTextColor(0xFFFFFFFF); // White for dark theme
-            holder.timeText.setTextColor(0xFFFFFFFF); // White for time
-            holder.cardView.setCardBackgroundColor(0xFF2D2D2D); // Dark card background
+            int primaryColor = holder.itemView.getContext().getColor(R.color.primary_green);
+            holder.nameText.setTextColor(primaryColor);
+            holder.timeText.setTextColor(primaryColor);
         }
     }
     
