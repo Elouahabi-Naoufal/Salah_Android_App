@@ -74,9 +74,7 @@ public class MainActivity extends AppCompatActivity {
         TextView appTitle = findViewById(R.id.app_title);
         appTitle.setText(TranslationManager.tr("app_name"));
         
-        TextView locationText = findViewById(R.id.location_text);
-        String cityName = SettingsManager.getDefaultCity();
-        locationText.setText(cityName + ", Morocco");
+        updateLocationDisplay();
         
         TextView nextPrayerLabel = findViewById(R.id.next_prayer_label);
         nextPrayerLabel.setText(TranslationManager.tr("next_prayer"));
@@ -250,9 +248,7 @@ public class MainActivity extends AppCompatActivity {
         TextView appTitle = findViewById(R.id.app_title);
         appTitle.setText(TranslationManager.tr("app_name"));
         
-        TextView locationText = findViewById(R.id.location_text);
-        String cityName = SettingsManager.getDefaultCity();
-        locationText.setText(cityName + ", Morocco");
+        updateLocationDisplay();
         
         TextView nextPrayerLabel = findViewById(R.id.next_prayer_label);
         nextPrayerLabel.setText(TranslationManager.tr("next_prayer"));
@@ -308,6 +304,14 @@ public class MainActivity extends AppCompatActivity {
     private void startPrayerNotificationService() {
         Intent serviceIntent = new Intent(this, PrayerNotificationService.class);
         startForegroundService(serviceIntent);
+    }
+    
+    private void updateLocationDisplay() {
+        TextView locationText = findViewById(R.id.location_text);
+        String cityNameEn = SettingsManager.getDefaultCity();
+        City currentCity = CitiesData.getCityByName(cityNameEn);
+        String cityName = currentCity.getName(TranslationManager.getCurrentLanguage());
+        locationText.setText(cityName + ", " + TranslationManager.tr("country_morocco"));
     }
     
 

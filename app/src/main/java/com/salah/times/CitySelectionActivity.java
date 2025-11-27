@@ -53,8 +53,9 @@ public class CitySelectionActivity extends AppCompatActivity {
         allCities = CitiesData.getAllCities();
         displayCities = new ArrayList<>();
         
+        String currentLang = TranslationManager.getCurrentLanguage();
         for (City city : allCities) {
-            displayCities.add(city.getName(TranslationManager.getCurrentLanguage()));
+            displayCities.add(city.getName(currentLang));
         }
         
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice, displayCities);
@@ -62,7 +63,13 @@ public class CitySelectionActivity extends AppCompatActivity {
         cityList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         
         // Default selection (Casablanca)
-        cityList.setItemChecked(1, true);
+        String defaultCity = SettingsManager.getDefaultCity();
+        for (int i = 0; i < allCities.size(); i++) {
+            if (allCities.get(i).getNameEn().equals(defaultCity)) {
+                cityList.setItemChecked(i, true);
+                break;
+            }
+        }
         
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -80,18 +87,21 @@ public class CitySelectionActivity extends AppCompatActivity {
     
     private void filterCities(String query) {
         displayCities.clear();
+        allCities.clear();
+        
+        String currentLang = TranslationManager.getCurrentLanguage();
         
         if (query.isEmpty()) {
+            allCities.addAll(CitiesData.getAllCities());
             for (City city : allCities) {
-                displayCities.add(city.getName(TranslationManager.getCurrentLanguage()));
+                displayCities.add(city.getName(currentLang));
             }
         } else {
-            String lowerQuery = query.toLowerCase();
-            for (City city : allCities) {
-                String cityName = city.getName(TranslationManager.getCurrentLanguage());
-                if (cityName.toLowerCase().contains(lowerQuery)) {
-                    displayCities.add(cityName);
-                }
+            // Search in current language
+            List<City> searchResults = CitiesData.searchCities(query, currentLang);
+            allCities.addAll(searchResults);
+            for (City city : searchResults) {
+                displayCities.add(city.getName(currentLang));
             }
         }
         
@@ -105,16 +115,9 @@ public class CitySelectionActivity extends AppCompatActivity {
     
     private void selectCity() {
         int selectedPosition = cityList.getCheckedItemPosition();
-        if (selectedPosition >= 0 && selectedPosition < displayCities.size()) {
-            String selectedCityName = displayCities.get(selectedPosition);
-            
-            // Find the actual city object
-            for (City city : allCities) {
-                if (city.getName(TranslationManager.getCurrentLanguage()).equals(selectedCityName)) {
-                    SettingsManager.setDefaultCity(city.getNameEn());
-                    break;
-                }
-            }
+        if (selectedPosition >= 0 && selectedPosition < allCities.size()) {
+            City selectedCity = allCities.get(selectedPosition);
+            SettingsManager.setDefaultCity(selectedCity.getNameEn());
             
             // Return to main activity
             Intent intent = new Intent(this, MainActivity.class);

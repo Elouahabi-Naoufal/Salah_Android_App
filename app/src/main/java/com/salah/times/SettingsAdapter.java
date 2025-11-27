@@ -95,8 +95,10 @@ public class SettingsAdapter extends FragmentStateAdapter {
             Spinner citySpinner = new Spinner(getContext());
             List<City> cities = CitiesData.getAllCities();
             String[] cityNames = new String[cities.size()];
+            String currentLang = TranslationManager.getCurrentLanguage();
+            
             for (int i = 0; i < cities.size(); i++) {
-                cityNames[i] = cities.get(i).getNameEn();
+                cityNames[i] = cities.get(i).getName(currentLang);
             }
             ArrayAdapter<String> cityAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, cityNames);
@@ -104,8 +106,8 @@ public class SettingsAdapter extends FragmentStateAdapter {
             citySpinner.setAdapter(cityAdapter);
             
             String currentCity = SettingsManager.getDefaultCity();
-            for (int i = 0; i < cityNames.length; i++) {
-                if (cityNames[i].equals(currentCity)) {
+            for (int i = 0; i < cities.size(); i++) {
+                if (cities.get(i).getNameEn().equals(currentCity)) {
                     citySpinner.setSelection(i);
                     break;
                 }
@@ -114,8 +116,8 @@ public class SettingsAdapter extends FragmentStateAdapter {
             citySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    String selectedCity = cityNames[position];
-                    SettingsManager.setDefaultCity(selectedCity);
+                    City selectedCity = cities.get(position);
+                    SettingsManager.setDefaultCity(selectedCity.getNameEn());
                     Toast.makeText(getContext(), TranslationManager.tr("messages.city_changed"), Toast.LENGTH_LONG).show();
                 }
                 @Override
