@@ -1,0 +1,172 @@
+{
+  "app_name": "Prayer Times",
+  "settings": "Settings",
+  "refresh": "Refresh Prayer Times",
+  "next_prayer": "NEXT PRAYER",
+  "loading": "Loading...",
+  "error": "Error",
+  "cancel": "Cancel",
+  "ok": "OK",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "close": "Close",
+  "back": "Back",
+  "done": "Done",
+  "yes": "Yes",
+  "no": "No",
+  
+  "prayers": {
+    "fajr": "Fajr",
+    "dhuhr": "Dhuhr", 
+    "dohr": "Dhuhr",
+    "asr": "Asr",
+    "maghrib": "Maghrib",
+    "isha": "Isha",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset"
+  },
+  
+  "days": {
+    "monday": "Monday",
+    "tuesday": "Tuesday", 
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
+  
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March", 
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
+  
+  "settings_items": {
+    "theme": "Theme",
+    "theme_description": "Choose app appearance",
+    "theme_auto": "Auto",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "default_city": "Default City",
+    "city_description": "Select your location",
+    "notifications": "Notifications",
+    "notifications_enabled": "Enabled",
+    "notifications_disabled": "Disabled",
+    "auto_update": "Auto Update",
+    "auto_update_daily": "Daily",
+    "auto_update_manual": "Manual",
+    "iqama_delays": "Iqama Delays",
+    "iqama_description": "Configure prayer delays",
+    "update_all_cities": "Update All Cities",
+    "update_description": "Refresh prayer data",
+    "clear_cache": "Clear Cache",
+    "cache_description": "Reset stored data",
+    "restart_app": "Restart App",
+    "restart_description": "Apply changes"
+  },
+  
+  "city_selection": {
+    "welcome": "Welcome",
+    "select_city": "Please select your city to get accurate prayer times",
+    "search_city": "Search for a city...",
+    "set_default": "Set as Default",
+    "no_cities_found": "No cities found"
+  },
+  
+  "notifications": {
+    "prayer_time": "Prayer Time",
+    "time_for": "Time for",
+    "next_prayer_in": "Next prayer in",
+    "iqama_in": "Iqama in",
+    "minutes": "minutes"
+  },
+  
+  "messages": {
+    "theme_changed": "Theme changed. Restart app to apply.",
+    "city_changed": "City changed. Restart app to see changes.",
+    "notifications_enabled": "Notifications enabled",
+    "notifications_disabled": "Notifications disabled", 
+    "auto_update_enabled": "Auto update enabled",
+    "auto_update_disabled": "Auto update disabled",
+    "updating": "Updating...",
+    "update_success": "All cities updated successfully!",
+    "update_failed": "Update failed",
+    "cache_cleared": "Cache cleared. Prayer times will be re-downloaded.",
+    "restarting": "Restarting app...",
+    "refreshing": "Refreshing prayer times...",
+    "no_internet": "No internet connection",
+    "connection_error": "Connection error. Please try again.",
+    "data_unavailable": "Prayer times unavailable for this location"
+  },
+  
+  "hijri": {
+    "hijri_unavailable": "Hijri date unavailable",
+    "ah": "AH",
+    "months": {
+      "muharram": "Muharram",
+      "safar": "Safar", 
+      "rabi_al_awwal": "Rabi' al-Awwal",
+      "rabi_al_thani": "Rabi' al-Thani",
+      "jumada_al_awwal": "Jumada al-Awwal",
+      "jumada_al_thani": "Jumada al-Thani",
+      "rajab": "Rajab",
+      "shaban": "Sha'ban",
+      "ramadan": "Ramadan",
+      "shawwal": "Shawwal",
+      "dhu_al_qidah": "Dhu al-Qi'dah",
+      "dhu_al_hijjah": "Dhu al-Hijjah"
+    }
+  },
+  
+  "iqama": {
+    "iqama_delay": "Iqama Delay",
+    "delay_minutes": "minutes delay",
+    "iqama_settings": "Iqama Settings",
+    "delay_description": "Set the delay time between Adhan and Iqama for each prayer",
+    "iqama_info": "Iqama is the second call to prayer, indicating that the prayer is about to begin. Set appropriate delays based on your mosque's schedule."
+  },
+  
+  "errors": {
+    "network_error": "Network error occurred",
+    "parsing_error": "Error parsing prayer times",
+    "city_not_found": "City not found",
+    "invalid_data": "Invalid data received",
+    "timeout": "Request timeout",
+    "unknown_error": "Unknown error occurred"
+  },
+  
+  "missing_strings": {
+    "updating_cities": "Updating all cities...",
+    "cache_cleared_simple": "Cache cleared",
+    "theme_changed_full": "Theme changed to {theme}. Restart app to apply.",
+    "city_changed_full": "City changed to {city}. Restart app to see changes.",
+    "auto_update_status": "Auto update {status}",
+    "iqama_delay_set": "{prayer} Iqama delay set to {minutes} minutes",
+    "auto_update_daily_full": "Auto Update Prayer Times Daily",
+    "restart_app_simple": "Restart App",
+    "iqama_delay_settings_title": "Iqama Delay Settings",
+    "iqama_delay_description_full": "Set the delay time between Adhan and Iqama for each prayer",
+    "welcome_with_icon": "🕌 Welcome to Prayer Times",
+    "select_city_instruction": "Please select your default city for prayer times:",
+    "set_as_default": "Set as Default",
+    "min_suffix": " min",
+    "enabled_status": "enabled",
+    "disabled_status": "disabled",
+    "choose_theme": "Choose Theme",
+    "notification_settings_title": "Notification Settings",
+    "notifications_info": "When enabled, you'll receive:\n\n• Current prayer time in notification bar\n• Countdown to next prayer\n• Persistent notification with all prayer times\n• Real-time updates",
+    "enable_notifications": "Enable Prayer Time Notifications",
+    "iqama_info_full": "Iqama is the second call to prayer, indicating that the prayer is about to begin. Set appropriate delays based on your mosque's schedule."
+  }
+}

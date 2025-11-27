@@ -1,0 +1,172 @@
+{
+  "app_name": "Horarios de Oración",
+  "settings": "Configuración",
+  "refresh": "Actualizar Horarios de Oración",
+  "next_prayer": "PRÓXIMA ORACIÓN",
+  "loading": "Cargando...",
+  "error": "Error",
+  "cancel": "Cancelar",
+  "ok": "Aceptar",
+  "save": "Guardar",
+  "delete": "Eliminar",
+  "edit": "Editar",
+  "close": "Cerrar",
+  "back": "Atrás",
+  "done": "Hecho",
+  "yes": "Sí",
+  "no": "No",
+  
+  "prayers": {
+    "fajr": "Fajr",
+    "dhuhr": "Dhuhr", 
+    "dohr": "Dhuhr",
+    "asr": "Asr",
+    "maghrib": "Maghrib",
+    "isha": "Isha",
+    "sunrise": "Amanecer",
+    "sunset": "Atardecer"
+  },
+  
+  "days": {
+    "monday": "Lunes",
+    "tuesday": "Martes", 
+    "wednesday": "Miércoles",
+    "thursday": "Jueves",
+    "friday": "Viernes",
+    "saturday": "Sábado",
+    "sunday": "Domingo"
+  },
+  
+  "months": {
+    "january": "Enero",
+    "february": "Febrero",
+    "march": "Marzo", 
+    "april": "Abril",
+    "may": "Mayo",
+    "june": "Junio",
+    "july": "Julio",
+    "august": "Agosto",
+    "september": "Septiembre",
+    "october": "Octubre",
+    "november": "Noviembre",
+    "december": "Diciembre"
+  },
+  
+  "settings_items": {
+    "theme": "Tema",
+    "theme_description": "Elegir apariencia de la app",
+    "theme_auto": "Automático",
+    "theme_light": "Claro",
+    "theme_dark": "Oscuro",
+    "default_city": "Ciudad Predeterminada",
+    "city_description": "Selecciona tu ubicación",
+    "notifications": "Notificaciones",
+    "notifications_enabled": "Activadas",
+    "notifications_disabled": "Desactivadas",
+    "auto_update": "Actualización Automática",
+    "auto_update_daily": "Diaria",
+    "auto_update_manual": "Manual",
+    "iqama_delays": "Retrasos de Iqama",
+    "iqama_description": "Configurar retrasos de oración",
+    "update_all_cities": "Actualizar Todas las Ciudades",
+    "update_description": "Actualizar datos de oración",
+    "clear_cache": "Limpiar Caché",
+    "cache_description": "Restablecer datos almacenados",
+    "restart_app": "Reiniciar App",
+    "restart_description": "Aplicar cambios"
+  },
+  
+  "city_selection": {
+    "welcome": "Bienvenido",
+    "select_city": "Por favor selecciona tu ciudad para obtener horarios de oración precisos",
+    "search_city": "Buscar una ciudad...",
+    "set_default": "Establecer como Predeterminada",
+    "no_cities_found": "No se encontraron ciudades"
+  },
+  
+  "notifications": {
+    "prayer_time": "Hora de Oración",
+    "time_for": "Hora para",
+    "next_prayer_in": "Próxima oración en",
+    "iqama_in": "Iqama en",
+    "minutes": "minutos"
+  },
+  
+  "messages": {
+    "theme_changed": "Tema cambiado. Reinicia la app para aplicar.",
+    "city_changed": "Ciudad cambiada. Reinicia la app para ver los cambios.",
+    "notifications_enabled": "Notificaciones activadas",
+    "notifications_disabled": "Notificaciones desactivadas", 
+    "auto_update_enabled": "Actualización automática activada",
+    "auto_update_disabled": "Actualización automática desactivada",
+    "updating": "Actualizando...",
+    "update_success": "¡Todas las ciudades actualizadas exitosamente!",
+    "update_failed": "Actualización fallida",
+    "cache_cleared": "Caché limpiado. Los horarios de oración se volverán a descargar.",
+    "restarting": "Reiniciando app...",
+    "refreshing": "Actualizando horarios de oración...",
+    "no_internet": "Sin conexión a internet",
+    "connection_error": "Error de conexión. Por favor intenta de nuevo.",
+    "data_unavailable": "Horarios de oración no disponibles para esta ubicación"
+  },
+  
+  "hijri": {
+    "hijri_unavailable": "Fecha Hijri no disponible",
+    "ah": "AH",
+    "months": {
+      "muharram": "Muharram",
+      "safar": "Safar", 
+      "rabi_al_awwal": "Rabi' al-Awwal",
+      "rabi_al_thani": "Rabi' al-Thani",
+      "jumada_al_awwal": "Jumada al-Awwal",
+      "jumada_al_thani": "Jumada al-Thani",
+      "rajab": "Rajab",
+      "shaban": "Sha'ban",
+      "ramadan": "Ramadán",
+      "shawwal": "Shawwal",
+      "dhu_al_qidah": "Dhu al-Qi'dah",
+      "dhu_al_hijjah": "Dhu al-Hijjah"
+    }
+  },
+  
+  "iqama": {
+    "iqama_delay": "Retraso de Iqama",
+    "delay_minutes": "minutos de retraso",
+    "iqama_settings": "Configuración de Iqama",
+    "delay_description": "Establece el tiempo de retraso entre Adhan e Iqama para cada oración",
+    "iqama_info": "Iqama es la segunda llamada a la oración, indicando que la oración está a punto de comenzar. Establece retrasos apropiados basados en el horario de tu mezquita."
+  },
+  
+  "errors": {
+    "network_error": "Ocurrió un error de red",
+    "parsing_error": "Error al analizar horarios de oración",
+    "city_not_found": "Ciudad no encontrada",
+    "invalid_data": "Datos inválidos recibidos",
+    "timeout": "Tiempo de espera agotado",
+    "unknown_error": "Ocurrió un error desconocido"
+  },
+  
+  "missing_strings": {
+    "updating_cities": "Actualizando todas las ciudades...",
+    "cache_cleared_simple": "Caché limpiado",
+    "theme_changed_full": "Tema cambiado a {theme}. Reinicia la app para aplicar.",
+    "city_changed_full": "Ciudad cambiada a {city}. Reinicia la app para ver cambios.",
+    "auto_update_status": "Actualización automática {status}",
+    "iqama_delay_set": "Retraso de Iqama de {prayer} establecido a {minutes} minutos",
+    "auto_update_daily_full": "Actualización Automática Diaria de Horarios de Oración",
+    "restart_app_simple": "Reiniciar App",
+    "iqama_delay_settings_title": "Configuración de Retrasos de Iqama",
+    "iqama_delay_description_full": "Establece el tiempo de retraso entre Adhan e Iqama para cada oración",
+    "welcome_with_icon": "🕌 Bienvenido a Horarios de Oración",
+    "select_city_instruction": "Por favor selecciona tu ciudad predeterminada para horarios de oración:",
+    "set_as_default": "Establecer como Predeterminada",
+    "min_suffix": " min",
+    "enabled_status": "activada",
+    "disabled_status": "desactivada",
+    "choose_theme": "Elegir Tema",
+    "notification_settings_title": "Configuración de Notificaciones",
+    "notifications_info": "Cuando esté activado, recibirás:\n\n• Hora actual de oración en la barra de notificaciones\n• Cuenta regresiva para la próxima oración\n• Notificación persistente con todos los horarios de oración\n• Actualizaciones en tiempo real",
+    "enable_notifications": "Activar Notificaciones de Horarios de Oración",
+    "iqama_info_full": "Iqama es la segunda llamada a la oración, indicando que la oración está a punto de comenzar. Establece retrasos apropiados basados en el horario de tu mezquita."
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "app_name": "Horaires de Prière",
+  "settings": "Paramètres",
+  "refresh": "Actualiser les Horaires de Prière",
+  "next_prayer": "PROCHAINE PRIÈRE",
+  "loading": "Chargement...",
+  "error": "Erreur",
+  "cancel": "Annuler",
+  "ok": "OK",
+  "save": "Enregistrer",
+  "delete": "Supprimer",
+  "edit": "Modifier",
+  "close": "Fermer",
+  "back": "Retour",
+  "done": "Terminé",
+  "yes": "Oui",
+  "no": "Non",
+  
+  "prayers": {
+    "fajr": "Fajr",
+    "dhuhr": "Dhuhr", 
+    "dohr": "Dhuhr",
+    "asr": "Asr",
+    "maghrib": "Maghrib",
+    "isha": "Isha",
+    "sunrise": "Lever du soleil",
+    "sunset": "Coucher du soleil"
+  },
+  
+  "days": {
+    "monday": "Lundi",
+    "tuesday": "Mardi", 
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi",
+    "saturday": "Samedi",
+    "sunday": "Dimanche"
+  },
+  
+  "months": {
+    "january": "Janvier",
+    "february": "Février",
+    "march": "Mars", 
+    "april": "Avril",
+    "may": "Mai",
+    "june": "Juin",
+    "july": "Juillet",
+    "august": "Août",
+    "september": "Septembre",
+    "october": "Octobre",
+    "november": "Novembre",
+    "december": "Décembre"
+  },
+  
+  "settings_items": {
+    "theme": "Thème",
+    "theme_description": "Choisir l'apparence de l'app",
+    "theme_auto": "Automatique",
+    "theme_light": "Clair",
+    "theme_dark": "Sombre",
+    "default_city": "Ville par Défaut",
+    "city_description": "Sélectionnez votre emplacement",
+    "notifications": "Notifications",
+    "notifications_enabled": "Activées",
+    "notifications_disabled": "Désactivées",
+    "auto_update": "Mise à Jour Automatique",
+    "auto_update_daily": "Quotidienne",
+    "auto_update_manual": "Manuelle",
+    "iqama_delays": "Délais d'Iqama",
+    "iqama_description": "Configurer les délais de prière",
+    "update_all_cities": "Mettre à Jour Toutes les Villes",
+    "update_description": "Actualiser les données de prière",
+    "clear_cache": "Vider le Cache",
+    "cache_description": "Réinitialiser les données stockées",
+    "restart_app": "Redémarrer l'App",
+    "restart_description": "Appliquer les modifications"
+  },
+  
+  "city_selection": {
+    "welcome": "Bienvenue",
+    "select_city": "Veuillez sélectionner votre ville pour obtenir des horaires de prière précis",
+    "search_city": "Rechercher une ville...",
+    "set_default": "Définir par Défaut",
+    "no_cities_found": "Aucune ville trouvée"
+  },
+  
+  "notifications": {
+    "prayer_time": "Heure de Prière",
+    "time_for": "Heure pour",
+    "next_prayer_in": "Prochaine prière dans",
+    "iqama_in": "Iqama dans",
+    "minutes": "minutes"
+  },
+  
+  "messages": {
+    "theme_changed": "Thème modifié. Redémarrez l'app pour appliquer.",
+    "city_changed": "Ville modifiée. Redémarrez l'app pour voir les changements.",
+    "notifications_enabled": "Notifications activées",
+    "notifications_disabled": "Notifications désactivées", 
+    "auto_update_enabled": "Mise à jour automatique activée",
+    "auto_update_disabled": "Mise à jour automatique désactivée",
+    "updating": "Mise à jour...",
+    "update_success": "Toutes les villes mises à jour avec succès !",
+    "update_failed": "Échec de la mise à jour",
+    "cache_cleared": "Cache vidé. Les horaires de prière seront re-téléchargés.",
+    "restarting": "Redémarrage de l'app...",
+    "refreshing": "Actualisation des horaires de prière...",
+    "no_internet": "Pas de connexion internet",
+    "connection_error": "Erreur de connexion. Veuillez réessayer.",
+    "data_unavailable": "Horaires de prière indisponibles pour cet emplacement"
+  },
+  
+  "hijri": {
+    "hijri_unavailable": "Date Hijri indisponible",
+    "ah": "AH",
+    "months": {
+      "muharram": "Muharram",
+      "safar": "Safar", 
+      "rabi_al_awwal": "Rabi' al-Awwal",
+      "rabi_al_thani": "Rabi' al-Thani",
+      "jumada_al_awwal": "Jumada al-Awwal",
+      "jumada_al_thani": "Jumada al-Thani",
+      "rajab": "Rajab",
+      "shaban": "Sha'ban",
+      "ramadan": "Ramadan",
+      "shawwal": "Shawwal",
+      "dhu_al_qidah": "Dhu al-Qi'dah",
+      "dhu_al_hijjah": "Dhu al-Hijjah"
+    }
+  },
+  
+  "iqama": {
+    "iqama_delay": "Délai d'Iqama",
+    "delay_minutes": "minutes de délai",
+    "iqama_settings": "Paramètres d'Iqama",
+    "delay_description": "Définir le délai entre l'Adhan et l'Iqama pour chaque prière",
+    "iqama_info": "L'Iqama est le second appel à la prière, indiquant que la prière est sur le point de commencer. Définissez des délais appropriés basés sur l'horaire de votre mosquée."
+  },
+  
+  "errors": {
+    "network_error": "Une erreur réseau s'est produite",
+    "parsing_error": "Erreur d'analyse des horaires de prière",
+    "city_not_found": "Ville non trouvée",
+    "invalid_data": "Données invalides reçues",
+    "timeout": "Délai d'attente dépassé",
+    "unknown_error": "Une erreur inconnue s'est produite"
+  },
+  
+  "missing_strings": {
+    "updating_cities": "Mise à jour de toutes les villes...",
+    "cache_cleared_simple": "Cache vidé",
+    "theme_changed_full": "Thème changé en {theme}. Redémarrez l'app pour appliquer.",
+    "city_changed_full": "Ville changée en {city}. Redémarrez l'app pour voir les changements.",
+    "auto_update_status": "Mise à jour automatique {status}",
+    "iqama_delay_set": "Délai d'Iqama de {prayer} défini à {minutes} minutes",
+    "auto_update_daily_full": "Mise à Jour Automatique Quotidienne des Horaires de Prière",
+    "restart_app_simple": "Redémarrer l'App",
+    "iqama_delay_settings_title": "Paramètres des Délais d'Iqama",
+    "iqama_delay_description_full": "Définir le délai entre l'Adhan et l'Iqama pour chaque prière",
+    "welcome_with_icon": "🕌 Bienvenue aux Horaires de Prière",
+    "select_city_instruction": "Veuillez sélectionner votre ville par défaut pour les horaires de prière :",
+    "set_as_default": "Définir par Défaut",
+    "min_suffix": " min",
+    "enabled_status": "activée",
+    "disabled_status": "désactivée",
+    "choose_theme": "Choisir le Thème",
+    "notification_settings_title": "Paramètres de Notifications",
+    "notifications_info": "Lorsque activé, vous recevrez :\n\n• Heure actuelle de prière dans la barre de notifications\n• Compte à rebours pour la prochaine prière\n• Notification persistante avec tous les horaires de prière\n• Mises à jour en temps réel",
+    "enable_notifications": "Activer les Notifications d'Horaires de Prière",
+    "iqama_info_full": "L'Iqama est le second appel à la prière, indiquant que la prière est sur le point de commencer. Définissez des délais appropriés basés sur l'horaire de votre mosquée."
+  }
+}
