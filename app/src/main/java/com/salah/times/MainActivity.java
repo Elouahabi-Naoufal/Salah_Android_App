@@ -56,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
         loadPrayerTimes();
         
         // Check if first time setup needed
-        if (SettingsManager.getDefaultCity().equals("Casablanca") && !hasUserSelectedCity()) {
-            startCitySelection();
+        if (isFirstTimeUser()) {
+            startLanguageSelection();
         }
         
         // Start persistent notification service
@@ -338,8 +338,13 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, featureName + " " + TranslationManager.tr("messages.feature_coming_soon"), Toast.LENGTH_SHORT).show();
     }
     
-    private boolean hasUserSelectedCity() {
-        return !SettingsManager.getDefaultCity().equals("Casablanca");
+    private boolean isFirstTimeUser() {
+        return SalahApplication.getInstance().isFirstRun();
+    }
+    
+    private void startLanguageSelection() {
+        Intent intent = new Intent(this, LanguageSelectionActivity.class);
+        startActivity(intent);
     }
     
     private void startCitySelection() {

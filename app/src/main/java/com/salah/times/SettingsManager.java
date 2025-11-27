@@ -44,7 +44,7 @@ public class SettingsManager {
     
     public static String getLanguage() {
         JSONObject settings = loadSettings();
-        return settings.optString("language", "en");
+        return settings.optString("language", "ar");
     }
     
     public static void setNotificationsEnabled(boolean enabled) {
@@ -130,7 +130,7 @@ public class SettingsManager {
         try {
             JSONObject defaults = new JSONObject();
             defaults.put("default_city", "Casablanca");
-            defaults.put("language", "en");
+            defaults.put("language", "ar");
             defaults.put("notifications_enabled", true);
             defaults.put("theme", "auto");
             defaults.put("auto_update", true);

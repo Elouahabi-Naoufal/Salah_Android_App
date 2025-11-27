@@ -54,7 +54,7 @@ public class SalahApplication extends Application {
         
         // Initialize default settings
         SettingsManager.setDefaultCity("Casablanca");
-        SettingsManager.setLanguage("en");
+        SettingsManager.setLanguage("ar");
         
         Log.d(TAG, "First run setup completed");
     }

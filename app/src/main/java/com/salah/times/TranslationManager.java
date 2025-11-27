@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TranslationManager {
-    private static String currentLanguage = "en";
+    private static String currentLanguage = "ar";
     private static Map<String, JSONObject> translations = new HashMap<>();
     private static Context appContext;
     
