@@ -5,41 +5,33 @@
     android:orientation="vertical"
     android:padding="24dp"
     android:gravity="center"
-    android:background="@drawable/dark_gradient_background">
-
-    <ImageView
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:src="@drawable/ic_storage"
-        android:layout_marginBottom="32dp" />
+    android:background="@drawable/gradient_background">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Storage Permission Required"
-        android:textSize="24sp"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+        android:text="🕌"
+        android:textSize="64sp"
+        android:layout_marginBottom="24dp" />
 
     <TextView
-        android:id="@+id/explanation_text"
+        android:id="@+id/permission_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:textColor="@android:color/white"
-        android:alpha="0.9"
+        android:textColor="#2d5a27"
+        android:textAlignment="center"
         android:lineSpacingExtra="4dp"
         android:layout_marginBottom="32dp" />
 
     <Button
         android:id="@+id/grant_permission_button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:text="Grant Storage Permission"
-        android:textColor="@android:color/white"
-        android:backgroundTint="@color/dark_primary"
-        android:padding="16dp"
-        android:textSize="16sp" />
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:background="@drawable/modern_button"
+        android:layout_marginTop="16dp" />
 
 </LinearLayout>

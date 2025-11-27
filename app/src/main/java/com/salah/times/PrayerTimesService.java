@@ -7,6 +7,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import org.json.JSONObject;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class PrayerTimesService {
     private static final String TAG = "PrayerTimesService";
@@ -14,6 +18,34 @@ public class PrayerTimesService {
 
     public static CompletableFuture<PrayerTimes> fetchPrayerTimes(City city) {
         return CompletableFuture.supplyAsync(() -> {
+            // First try to load from cache
+            JSONObject cachedData = StorageManager.loadCityData(city.getNameEn());
+            if (cachedData != null) {
+                try {
+                    String today = new SimpleDateFormat("dd/MM", Locale.getDefault()).format(new Date());
+                    JSONObject prayerTimes = cachedData.getJSONObject("prayer_times");
+                    if (prayerTimes.has(today)) {
+                        JSONObject todayPrayers = prayerTimes.getJSONObject(today);
+                        PrayerTimes prayers = new PrayerTimes(
+                            todayPrayers.getString("Date"),
+                            todayPrayers.getString("Fajr"),
+                            "00:00",
+                            todayPrayers.getString("Dohr"),
+                            todayPrayers.getString("Asr"),
+                            todayPrayers.getString("Maghreb"),
+                            todayPrayers.getString("Isha")
+                        );
+                        Log.d(TAG, "Loaded from cache: " + city.getNameEn());
+                        
+                        // Start background update if needed
+                        checkAndUpdateAllCitiesInBackground();
+                        return prayers;
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "Cache load failed, fetching from web");
+                }
+            }
+            
             try {
                 String url = BASE_URL + city.getId() + "/city.html";
                 Log.d(TAG, "Fetching prayer times from: " + url);
@@ -89,6 +121,12 @@ public class PrayerTimesService {
                     isha = "20:30";
                 }
 
+                // Save full month data to storage
+                saveFullMonthData(doc, city.getNameEn());
+                
+                // Start background update if needed
+                checkAndUpdateAllCitiesInBackground();
+                
                 PrayerTimes result = new PrayerTimes(date, fajr, "00:00", dohr, asr, maghreb, isha);
                 Log.d(TAG, "Successfully created PrayerTimes object");
                 return result;
@@ -101,6 +139,111 @@ public class PrayerTimesService {
                 throw new RuntimeException("Parsing error: " + e.getMessage());
             }
         });
+    }
+    
+    private static void saveFullMonthData(Document doc, String cityName) {
+        try {
+            Element table = null;
+            Elements tables = doc.select("table");
+            for (Element t : tables) {
+                Elements rows = t.select("tr");
+                if (rows.size() > 1) {
+                    table = t;
+                    break;
+                }
+            }
+            
+            if (table == null) return;
+            
+            JSONObject monthData = new JSONObject();
+            Elements rows = table.select("tr");
+            
+            for (int i = 1; i < rows.size(); i++) {
+                Elements cols = rows.get(i).select("td");
+                if (cols.size() >= 6) {
+                    String date = cols.get(0).text().trim();
+                    JSONObject dayPrayers = new JSONObject();
+                    dayPrayers.put("Date", date);
+                    dayPrayers.put("Fajr", cols.get(1).text().trim());
+                    dayPrayers.put("Dohr", cols.get(2).text().trim());
+                    dayPrayers.put("Asr", cols.get(3).text().trim());
+                    dayPrayers.put("Maghreb", cols.get(4).text().trim());
+                    dayPrayers.put("Isha", cols.get(5).text().trim());
+                    monthData.put(date, dayPrayers);
+                }
+            }
+            
+            StorageManager.saveCityData(cityName, monthData);
+            StorageManager.saveLastUpdate();
+            Log.d(TAG, "Saved month data for " + cityName);
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving month data", e);
+        }
+    }
+    
+    private static void checkAndUpdateAllCitiesInBackground() {
+        CompletableFuture.runAsync(() -> {
+            int cityCount = StorageManager.countCityFiles();
+            boolean dateNeedsUpdate = StorageManager.shouldUpdateToday();
+            boolean citiesIncomplete = cityCount < 42;
+            
+            if (dateNeedsUpdate && citiesIncomplete) {
+                Log.d(TAG, "Starting background update of all cities... (Current: " + cityCount + "/42, Date outdated)");
+                updateAllCitiesDatabase();
+            } else if (dateNeedsUpdate) {
+                Log.d(TAG, "Date outdated but all cities present (" + cityCount + "/42) - updating all");
+                updateAllCitiesDatabase();
+            } else {
+                Log.d(TAG, "All cities up to date (" + cityCount + "/42)");
+            }
+        });
+    }
+    
+    public static CompletableFuture<Void> forceUpdateAllCities() {
+        return CompletableFuture.runAsync(() -> {
+            Log.i(TAG, "Force updating all cities database...");
+            updateAllCitiesDatabase();
+        });
+    }
+    
+    private static void updateAllCitiesDatabase() {
+        int successCount = 0;
+        java.util.List<String> failedCities = new java.util.ArrayList<>();
+        java.util.List<City> allCities = CitiesData.getAllCities();
+        
+        Log.i(TAG, "Starting update of " + allCities.size() + " cities...");
+        
+        for (City city : allCities) {
+            try {
+                String url = BASE_URL + city.getId() + "/city.html";
+                Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .timeout(15000)
+                    .get();
+                
+                saveFullMonthData(doc, city.getNameEn());
+                successCount++;
+                Log.d(TAG, "✓ Updated " + city.getNameEn() + " (" + successCount + "/" + allCities.size() + ")");
+                
+                // Small delay to avoid overwhelming the server
+                Thread.sleep(200);
+                
+            } catch (Exception e) {
+                failedCities.add(city.getNameEn());
+                Log.w(TAG, "✗ Failed to update " + city.getNameEn() + ": " + e.getMessage());
+            }
+        }
+        
+        // Count actual files in cities folder
+        int actualFiles = StorageManager.countCityFiles();
+        
+        // Update last_update.json with results
+        StorageManager.updateLastUpdateWithResults(actualFiles, failedCities);
+        
+        Log.i(TAG, "Database update completed: " + actualFiles + "/" + allCities.size() + " cities successfully updated");
+        if (!failedCities.isEmpty()) {
+            Log.w(TAG, "Failed cities: " + String.join(", ", failedCities));
+        }
     }
 
     

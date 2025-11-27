@@ -1,58 +1,42 @@
 package com.salah.times;
 
-import android.content.Context;
 import android.os.Environment;
-import android.util.Log;
 import org.json.JSONObject;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.BufferedReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import org.json.JSONArray;
 
 public class StorageManager {
-    private static final String TAG = "StorageManager";
-    private static final String APP_FOLDER = "SalahTimes";
-    private static final String CITIES_FOLDER = "cities";
-    private static final String CONFIG_FOLDER = "config";
+    private static final File BASE_DIR = new File(Environment.getExternalStorageDirectory(), "SalahTimes");
+    private static final File CITIES_DIR = new File(BASE_DIR, "cities");
+    private static final File CONFIG_DIR = new File(BASE_DIR, "config");
     
-    private File appDir;
-    private File citiesDir;
-    private File configDir;
-    
-    public StorageManager() {
-        initDirectories();
-    }
-    
-    private void initDirectories() {
-        File externalStorage = Environment.getExternalStorageDirectory();
-        appDir = new File(externalStorage, APP_FOLDER);
-        citiesDir = new File(appDir, CITIES_FOLDER);
-        configDir = new File(appDir, CONFIG_FOLDER);
-        
-        createDirectories();
-    }
-    
-    private void createDirectories() {
-        if (!appDir.exists()) appDir.mkdirs();
-        if (!citiesDir.exists()) citiesDir.mkdirs();
-        if (!configDir.exists()) configDir.mkdirs();
-    }
-    
-    public void saveCityData(String cityName, JSONObject data) {
+    public static void saveCityData(String cityName, JSONObject prayerTimes) {
         try {
-            File cityFile = new File(citiesDir, cityName.toLowerCase() + ".json");
+            CITIES_DIR.mkdirs();
+            File cityFile = new File(CITIES_DIR, cityName.toLowerCase() + ".json");
+            
+            JSONObject cityData = new JSONObject();
+            cityData.put("city", cityName);
+            cityData.put("last_updated", getCurrentTimestamp());
+            cityData.put("prayer_times", prayerTimes);
+            
             FileWriter writer = new FileWriter(cityFile);
-            writer.write(data.toString());
+            writer.write(cityData.toString(2));
             writer.close();
-            Log.d(TAG, "Saved data for " + cityName);
-        } catch (IOException e) {
-            Log.e(TAG, "Error saving city data", e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
-    public JSONObject loadCityData(String cityName) {
+    public static JSONObject loadCityData(String cityName) {
         try {
-            File cityFile = new File(citiesDir, cityName.toLowerCase() + ".json");
+            File cityFile = new File(CITIES_DIR, cityName.toLowerCase() + ".json");
             if (!cityFile.exists()) return null;
             
             BufferedReader reader = new BufferedReader(new FileReader(cityFile));
@@ -62,58 +46,36 @@ public class StorageManager {
                 content.append(line);
             }
             reader.close();
+            
             return new JSONObject(content.toString());
         } catch (Exception e) {
-            Log.e(TAG, "Error loading city data", e);
             return null;
         }
     }
     
-    public boolean hasCityData(String cityName) {
-        File cityFile = new File(citiesDir, cityName.toLowerCase() + ".json");
-        return cityFile.exists();
-    }
-    
-    public boolean isDataExpired(String cityName) {
+    public static void saveLastUpdate() {
         try {
-            JSONObject data = loadCityData(cityName);
-            if (data == null) return true;
+            CONFIG_DIR.mkdirs();
+            File updateFile = new File(CONFIG_DIR, "last_update.json");
             
-            String lastUpdated = data.getString("last_updated");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date updateDate = sdf.parse(lastUpdated);
-            Date today = new Date();
+            JSONObject updateData = new JSONObject();
+            updateData.put("last_update", getCurrentTimestamp());
+            updateData.put("cities_updated", 42);
             
-            long diffInMillis = today.getTime() - updateDate.getTime();
-            long diffInDays = diffInMillis / (24 * 60 * 60 * 1000);
-            
-            return diffInDays >= 1;
-        } catch (Exception e) {
-            return true;
-        }
-    }
-    
-    public void saveConfig(String key, String value) {
-        try {
-            File configFile = new File(configDir, key + ".json");
-            JSONObject config = new JSONObject();
-            config.put("value", value);
-            config.put("timestamp", System.currentTimeMillis());
-            
-            FileWriter writer = new FileWriter(configFile);
-            writer.write(config.toString());
+            FileWriter writer = new FileWriter(updateFile);
+            writer.write(updateData.toString(2));
             writer.close();
         } catch (Exception e) {
-            Log.e(TAG, "Error saving config", e);
+            e.printStackTrace();
         }
     }
     
-    public String loadConfig(String key, String defaultValue) {
+    public static boolean needsUpdate() {
         try {
-            File configFile = new File(configDir, key + ".json");
-            if (!configFile.exists()) return defaultValue;
+            File updateFile = new File(CONFIG_DIR, "last_update.json");
+            if (!updateFile.exists()) return true;
             
-            BufferedReader reader = new BufferedReader(new FileReader(configFile));
+            BufferedReader reader = new BufferedReader(new FileReader(updateFile));
             StringBuilder content = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -121,19 +83,96 @@ public class StorageManager {
             }
             reader.close();
             
-            JSONObject config = new JSONObject(content.toString());
-            return config.getString("value");
+            JSONObject updateData = new JSONObject(content.toString());
+            String lastUpdate = updateData.getString("last_update");
+            
+            // Check if more than 1 day old
+            long lastTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).parse(lastUpdate).getTime();
+            long now = System.currentTimeMillis();
+            return (now - lastTime) > 24 * 60 * 60 * 1000; // 1 day
         } catch (Exception e) {
-            return defaultValue;
+            return true;
         }
     }
     
-    public void updateLastUpdateTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        saveConfig("last_update", sdf.format(new Date()));
+    public static boolean hasCityData(String cityName) {
+        File cityFile = new File(CITIES_DIR, cityName.toLowerCase() + ".json");
+        return cityFile.exists();
     }
     
-    public boolean isStorageAvailable() {
-        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+    public static boolean isDataExpired(String cityName) {
+        return needsUpdate();
+    }
+    
+    public static void updateLastUpdateTime() {
+        saveLastUpdate();
+    }
+    
+    public static boolean shouldUpdateToday() {
+        try {
+            File updateFile = new File(CONFIG_DIR, "last_update.json");
+            if (!updateFile.exists()) return true;
+            
+            BufferedReader reader = new BufferedReader(new FileReader(updateFile));
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line);
+            }
+            reader.close();
+            
+            JSONObject updateData = new JSONObject(content.toString());
+            String lastUpdate = updateData.getString("last_update");
+            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+            
+            return !lastUpdate.startsWith(today);
+        } catch (Exception e) {
+            return true;
+        }
+    }
+    
+    public static int countCityFiles() {
+        File[] files = CITIES_DIR.listFiles((dir, name) -> name.endsWith(".json"));
+        return files != null ? files.length : 0;
+    }
+    
+    public static void updateLastUpdateWithResults(int cityCount, java.util.List<String> failedCities) {
+        try {
+            CONFIG_DIR.mkdirs();
+            
+            JSONObject updateData = new JSONObject();
+            updateData.put("last_update", getCurrentTimestamp());
+            updateData.put("cities_updated", cityCount);
+            updateData.put("total_cities", 42);
+            
+            if (!failedCities.isEmpty()) {
+                org.json.JSONArray failedArray = new org.json.JSONArray();
+                for (String city : failedCities) {
+                    failedArray.put(city);
+                }
+                updateData.put("failed_cities", failedArray);
+                
+                // Save failed cities to separate file
+                File failedFile = new File(CONFIG_DIR, "failed_cities.json");
+                JSONObject failedData = new JSONObject();
+                failedData.put("failed_cities", failedArray);
+                failedData.put("timestamp", getCurrentTimestamp());
+                
+                FileWriter failedWriter = new FileWriter(failedFile);
+                failedWriter.write(failedData.toString(2));
+                failedWriter.close();
+            }
+            
+            File updateFile = new File(CONFIG_DIR, "last_update.json");
+            FileWriter writer = new FileWriter(updateFile);
+            writer.write(updateData.toString(2));
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static String getCurrentTimestamp() {
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(new Date());
     }
 }
