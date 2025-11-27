@@ -109,7 +109,8 @@
     "refreshing": "Refreshing prayer times...",
     "no_internet": "No internet connection",
     "connection_error": "Connection error. Please try again.",
-    "data_unavailable": "Prayer times unavailable for this location"
+    "data_unavailable": "Prayer times unavailable for this location",
+    "feature_coming_soon": "feature coming soon!"
   },
   
   "hijri": {

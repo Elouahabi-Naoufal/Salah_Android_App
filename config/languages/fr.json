@@ -108,7 +108,8 @@
     "refreshing": "Actualisation des horaires de prière...",
     "no_internet": "Pas de connexion internet",
     "connection_error": "Erreur de connexion. Veuillez réessayer.",
-    "data_unavailable": "Horaires de prière indisponibles pour cet emplacement"
+    "data_unavailable": "Horaires de prière indisponibles pour cet emplacement",
+    "feature_coming_soon": "fonctionnalité bientôt disponible !"
   },
   
   "hijri": {

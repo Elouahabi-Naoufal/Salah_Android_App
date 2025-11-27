@@ -108,7 +108,8 @@
     "refreshing": "Actualizando horarios de oración...",
     "no_internet": "Sin conexión a internet",
     "connection_error": "Error de conexión. Por favor intenta de nuevo.",
-    "data_unavailable": "Horarios de oración no disponibles para esta ubicación"
+    "data_unavailable": "Horarios de oración no disponibles para esta ubicación",
+    "feature_coming_soon": "¡función próximamente!"
   },
   
   "hijri": {

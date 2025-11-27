@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -107,11 +108,11 @@ public class MainActivity extends AppCompatActivity {
         
         // Initialize with loading state - 5 essential prayers only
         List<PrayerAdapter.PrayerItem> prayers = new ArrayList<>();
-        prayers.add(new PrayerAdapter.PrayerItem("Fajr", "Loading...", false));
-        prayers.add(new PrayerAdapter.PrayerItem("Dohr", "Loading...", false));
-        prayers.add(new PrayerAdapter.PrayerItem("Asr", "Loading...", false));
-        prayers.add(new PrayerAdapter.PrayerItem("Maghreb", "Loading...", false));
-        prayers.add(new PrayerAdapter.PrayerItem("Isha", "Loading...", false));
+        prayers.add(new PrayerAdapter.PrayerItem("Fajr", TranslationManager.tr("loading"), false));
+        prayers.add(new PrayerAdapter.PrayerItem("Dohr", TranslationManager.tr("loading"), false));
+        prayers.add(new PrayerAdapter.PrayerItem("Asr", TranslationManager.tr("loading"), false));
+        prayers.add(new PrayerAdapter.PrayerItem("Maghreb", TranslationManager.tr("loading"), false));
+        prayers.add(new PrayerAdapter.PrayerItem("Isha", TranslationManager.tr("loading"), false));
         
         PrayerAdapter adapter = new PrayerAdapter(prayers);
         prayerGrid.setAdapter(adapter);
@@ -275,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
         setupPrayerGrid();
         countdownText.setText("--:--:--");
         if (hijriText != null) {
-            hijriText.setText("Loading...");
+            hijriText.setText(TranslationManager.tr("loading"));
         }
         
         // Clear current data
@@ -289,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void showFeatureUnavailable(String featureName) {
-        Toast.makeText(this, featureName + " feature coming soon!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, featureName + " " + TranslationManager.tr("messages.feature_coming_soon"), Toast.LENGTH_SHORT).show();
     }
     
     private boolean hasUserSelectedCity() {
