@@ -102,6 +102,12 @@ public class MainActivity extends AppCompatActivity {
             showTestingDialog();
             return true;
         });
+        
+        // Setup adhkar button
+        findViewById(R.id.adhkar_button).setOnClickListener(v -> {
+            Intent intent = new Intent(this, AdhkarActivity.class);
+            startActivity(intent);
+        });
     }
     
     private void setupPrayerGrid() {

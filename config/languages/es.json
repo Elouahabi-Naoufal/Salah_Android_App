@@ -163,6 +163,16 @@
     "configure_description": "Configurar alarmas de oración"
   },
   
+  "adhkar": {
+    "adhkar": "Adhkar",
+    "morning": "Mañana",
+    "evening": "Tarde",
+    "add_new_adhkar": "Agregar Nuevo Adhkar",
+    "adhkar_text": "Texto del Adhkar",
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  },
+  
   "missing_strings": {
     "updating_cities": "Actualizando todas las ciudades...",
     "cache_cleared_simple": "Caché limpiado",

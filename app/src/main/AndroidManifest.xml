@@ -88,6 +88,12 @@
             android:exported="false"
             android:theme="@style/Theme.SalahTimes"
             android:parentActivityName=".SettingsActivity" />
+            
+        <activity
+            android:name=".AdhkarActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SalahTimes"
+            android:parentActivityName=".MainActivity" />
     </application>
 
 </manifest>

@@ -44,17 +44,36 @@
 
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/settings_button"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:icon="@drawable/ic_settings"
-                app:iconSize="24dp"
-                app:iconTint="@color/text_secondary"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:contentDescription="Settings" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/adhkar_button"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:text="📿"
+                    android:textSize="20sp"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:contentDescription="Adhkar"
+                    android:layout_marginEnd="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/settings_button"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_settings"
+                    app:iconSize="24dp"
+                    app:iconTint="@color/text_secondary"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:contentDescription="Settings" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

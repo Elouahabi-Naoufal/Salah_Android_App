@@ -163,6 +163,16 @@
     "configure_description": "Configurer les alarmes de prière"
   },
   
+  "adhkar": {
+    "adhkar": "Adhkar",
+    "morning": "Matin",
+    "evening": "Soir",
+    "add_new_adhkar": "Ajouter Nouvel Adhkar",
+    "adhkar_text": "Texte Adhkar",
+    "cancel": "Annuler",
+    "save": "Enregistrer"
+  },
+  
   "missing_strings": {
     "updating_cities": "Mise à jour de toutes les villes...",
     "cache_cleared_simple": "Cache vidé",
