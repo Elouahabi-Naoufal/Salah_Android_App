@@ -151,6 +151,18 @@
     "unknown_error": "Unknown error occurred"
   },
   
+  "adhan_settings": {
+    "prayer_alarms": "Prayer Alarms",
+    "sound": "Sound",
+    "ringtone": "Ringtone",
+    "volume": "Volume",
+    "adhan": "Adhan",
+    "system_alarm": "System Alarm",
+    "system_notification": "System Notification",
+    "select_ringtone": "Select Ringtone",
+    "configure_description": "Configure prayer alarms"
+  },
+  
   "missing_strings": {
     "updating_cities": "Updating all cities...",
     "cache_cleared_simple": "Cache cleared",

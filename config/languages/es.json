@@ -151,6 +151,18 @@
     "unknown_error": "Ocurrió un error desconocido"
   },
   
+  "adhan_settings": {
+    "prayer_alarms": "Alarmas de Oración",
+    "sound": "Sonido",
+    "ringtone": "Tono",
+    "volume": "Volumen",
+    "adhan": "Adhan",
+    "system_alarm": "Alarma del Sistema",
+    "system_notification": "Notificación del Sistema",
+    "select_ringtone": "Seleccionar Tono",
+    "configure_description": "Configurar alarmas de oración"
+  },
+  
   "missing_strings": {
     "updating_cities": "Actualizando todas las ciudades...",
     "cache_cleared_simple": "Caché limpiado",

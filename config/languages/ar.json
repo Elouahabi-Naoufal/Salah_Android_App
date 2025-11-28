@@ -151,6 +151,18 @@
     "unknown_error": "حدث خطأ غير معروف"
   },
   
+  "adhan_settings": {
+    "prayer_alarms": "منبهات الصلاة",
+    "sound": "الصوت",
+    "ringtone": "نغمة الرنين",
+    "volume": "مستوى الصوت",
+    "adhan": "أذان",
+    "system_alarm": "منبه النظام",
+    "system_notification": "إشعار النظام",
+    "select_ringtone": "اختيار نغمة الرنين",
+    "configure_description": "تكوين منبهات الصلاة"
+  },
+  
   "missing_strings": {
     "updating_cities": "جاري تحديث جميع المدن...",
     "cache_cleared_simple": "تم مسح التخزين المؤقت",

@@ -32,11 +32,12 @@ public class AdhanSettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_adhan_settings);
         
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Prayer Alarms");
+            getSupportActionBar().setTitle(TranslationManager.tr("adhan_settings.prayer_alarms"));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         
         initViews();
+        setupTexts();
         setupMasterSwitch();
         setupPrayerToggles();
         setupRingtoneSelector();
@@ -48,6 +49,20 @@ public class AdhanSettingsActivity extends AppCompatActivity {
         prayersContainer = findViewById(R.id.prayers_container);
         ringtoneName = findViewById(R.id.ringtone_name);
         volumeSeekBar = findViewById(R.id.volume_seekbar);
+    }
+    
+    private void setupTexts() {
+        TextView prayerAlarmsTitle = findViewById(R.id.prayer_alarms_title);
+        prayerAlarmsTitle.setText(TranslationManager.tr("adhan_settings.prayer_alarms"));
+        
+        TextView soundTitle = findViewById(R.id.sound_title);
+        soundTitle.setText(TranslationManager.tr("adhan_settings.sound"));
+        
+        TextView ringtoneLabel = findViewById(R.id.ringtone_label);
+        ringtoneLabel.setText(TranslationManager.tr("adhan_settings.ringtone"));
+        
+        TextView volumeLabel = findViewById(R.id.volume_label);
+        volumeLabel.setText(TranslationManager.tr("adhan_settings.volume"));
     }
     
     private void setupMasterSwitch() {
@@ -102,7 +117,7 @@ public class AdhanSettingsActivity extends AppCompatActivity {
         textContainer.setLayoutParams(textParams);
         
         TextView prayerName = new TextView(this);
-        prayerName.setText(prayer);
+        prayerName.setText(TranslationManager.tr("prayers." + prayer.toLowerCase()));
         prayerName.setTextSize(18);
         prayerName.setTextColor(getColor(R.color.text_primary));
         textContainer.addView(prayerName);
@@ -157,10 +172,14 @@ public class AdhanSettingsActivity extends AppCompatActivity {
     
     private void setupRingtoneSelector() {
         findViewById(R.id.ringtone_setting).setOnClickListener(v -> {
-            String[] options = {"Adhan", "System Alarm", "System Notification"};
+            String[] options = {
+                TranslationManager.tr("adhan_settings.adhan"), 
+                TranslationManager.tr("adhan_settings.system_alarm"), 
+                TranslationManager.tr("adhan_settings.system_notification")
+            };
             
             new android.app.AlertDialog.Builder(this)
-                .setTitle("Select Ringtone")
+                .setTitle(TranslationManager.tr("adhan_settings.select_ringtone"))
                 .setItems(options, (dialog, which) -> {
                     SettingsManager.setAdhanRingtone(which);
                     ringtoneName.setText(options[which]);
@@ -169,7 +188,11 @@ public class AdhanSettingsActivity extends AppCompatActivity {
         });
         
         // Set current ringtone name
-        String[] ringtones = {"Adhan", "System Alarm", "System Notification"};
+        String[] ringtones = {
+            TranslationManager.tr("adhan_settings.adhan"), 
+            TranslationManager.tr("adhan_settings.system_alarm"), 
+            TranslationManager.tr("adhan_settings.system_notification")
+        };
         ringtoneName.setText(ringtones[SettingsManager.getAdhanRingtone()]);
     }
     

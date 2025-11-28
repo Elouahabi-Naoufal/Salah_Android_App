@@ -187,12 +187,21 @@ public class PrayerTimesService {
             boolean dateNeedsUpdate = StorageManager.shouldUpdateToday();
             boolean citiesIncomplete = cityCount < 42;
             
-            if (dateNeedsUpdate && citiesIncomplete) {
-                Log.d(TAG, "Starting background update of all cities... (Current: " + cityCount + "/42, Date outdated)");
+            // Always update if cities are incomplete or date is outdated
+            if (citiesIncomplete || dateNeedsUpdate) {
+                Log.d(TAG, "Starting background update of all cities... (Current: " + cityCount + "/42, Date check: " + dateNeedsUpdate + ")");
                 updateAllCitiesDatabase();
-            } else if (dateNeedsUpdate) {
-                Log.d(TAG, "Date outdated but all cities present (" + cityCount + "/42) - updating all");
-                updateAllCitiesDatabase();
+                
+                // Keep updating until we have all 42 cities
+                while (StorageManager.countCityFiles() < 42) {
+                    Log.d(TAG, "Still missing cities, retrying... (" + StorageManager.countCityFiles() + "/42)");
+                    try {
+                        Thread.sleep(5000); // Wait 5 seconds before retry
+                        updateAllCitiesDatabase();
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
             } else {
                 Log.d(TAG, "All cities up to date (" + cityCount + "/42)");
             }

@@ -151,6 +151,18 @@
     "unknown_error": "Une erreur inconnue s'est produite"
   },
   
+  "adhan_settings": {
+    "prayer_alarms": "Alarmes de Prière",
+    "sound": "Son",
+    "ringtone": "Sonnerie",
+    "volume": "Volume",
+    "adhan": "Adhan",
+    "system_alarm": "Alarme Système",
+    "system_notification": "Notification Système",
+    "select_ringtone": "Sélectionner Sonnerie",
+    "configure_description": "Configurer les alarmes de prière"
+  },
+  
   "missing_strings": {
     "updating_cities": "Mise à jour de toutes les villes...",
     "cache_cleared_simple": "Cache vidé",
