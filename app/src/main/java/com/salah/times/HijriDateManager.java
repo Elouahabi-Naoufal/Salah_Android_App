@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class HijriDateManager {
     private static final String TAG = "HijriDateManager";
-    private static final String API_URL = "http://api.aladhan.com/v1/gToH/";
+    private static final String API_URL = "https://api.aladhan.com/v1/gToH/";
     
     private static final Map<String, String> hijriMonthsAr = new HashMap<>();
     private static final Map<String, String> hijriMonthsEn = new HashMap<>();
