@@ -212,6 +212,9 @@ public class MainActivity extends AppCompatActivity {
     private void updatePrayerTimesUI(PrayerTimes prayerTimes) {
         this.currentPrayerTimes = prayerTimes;
         
+        // Schedule prayer alarms
+        PrayerAlarmManager.scheduleAllPrayerAlarms(this, prayerTimes);
+        
         // Fetch tomorrow's Fajr for countdown calculation
         City defaultCity = CitiesData.getCityByName(SettingsManager.getDefaultCity());
         if (defaultCity != null) {
@@ -304,6 +307,11 @@ public class MainActivity extends AppCompatActivity {
         
         // Reload prayer times for new city
         loadPrayerTimes();
+        
+        // Reschedule alarms if prayer times changed
+        if (currentPrayerTimes != null) {
+            PrayerAlarmManager.scheduleAllPrayerAlarms(this, currentPrayerTimes);
+        }
     }
     
     @Override

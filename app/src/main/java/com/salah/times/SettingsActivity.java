@@ -47,6 +47,11 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsManager.getNotificationsEnabled() ? TranslationManager.tr("settings_items.notifications_enabled") : TranslationManager.tr("settings_items.notifications_disabled"), 
             v -> toggleNotifications());
         
+        // Adan Alarm
+        addSettingItem(container, "🔔", TranslationManager.tr("settings_items.adan"), 
+            SettingsManager.getAdanEnabled() ? TranslationManager.tr("settings_items.enabled") : TranslationManager.tr("settings_items.disabled"), 
+            v -> toggleAdan());
+        
 
         
         addDivider(container);
@@ -191,6 +196,12 @@ public class SettingsActivity extends AppCompatActivity {
     private void toggleNotifications() {
         boolean enabled = !SettingsManager.getNotificationsEnabled();
         SettingsManager.setNotificationsEnabled(enabled);
+        recreate();
+    }
+    
+    private void toggleAdan() {
+        boolean enabled = !SettingsManager.getAdanEnabled();
+        SettingsManager.setAdanEnabled(enabled);
         recreate();
     }
     

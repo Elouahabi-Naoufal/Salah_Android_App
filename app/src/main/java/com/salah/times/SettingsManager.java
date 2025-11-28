@@ -95,6 +95,22 @@ public class SettingsManager {
         return settings.optBoolean("auto_update", true);
     }
     
+    public static void setAdanEnabled(boolean enabled) {
+        JSONObject settings = loadSettings();
+        try {
+            settings.put("adan_enabled", enabled);
+            settings.put("last_modified", getCurrentTimestamp());
+            saveSettings(settings);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static boolean getAdanEnabled() {
+        JSONObject settings = loadSettings();
+        return settings.optBoolean("adan_enabled", true);
+    }
+    
     private static JSONObject loadSettings() {
         try {
             if (!SETTINGS_FILE.exists()) {
@@ -134,6 +150,7 @@ public class SettingsManager {
             defaults.put("notifications_enabled", true);
             defaults.put("theme", "auto");
             defaults.put("auto_update", true);
+            defaults.put("adan_enabled", true);
             defaults.put("created", getCurrentTimestamp());
             defaults.put("last_modified", getCurrentTimestamp());
             saveSettings(defaults);
