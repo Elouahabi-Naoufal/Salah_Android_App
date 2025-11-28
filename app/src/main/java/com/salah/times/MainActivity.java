@@ -493,6 +493,13 @@ public class MainActivity extends AppCompatActivity {
         iqamaCountdown.setText("");
     }
     
+    public void scheduleRealPrayerAlarms() {
+        if (currentPrayerTimes != null) {
+            PrayerAlarmManager.scheduleAllPrayerAlarms(this, currentPrayerTimes);
+            android.util.Log.d("MainActivity", "Real prayer alarms scheduled");
+        }
+    }
+    
     private void showTestingDialog() {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         builder.setTitle("Testing Mode - Adhan Test");

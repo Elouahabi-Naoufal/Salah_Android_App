@@ -33,6 +33,11 @@ public class TestingManager {
                     android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE);
                 alarmManager.cancel(pendingIntent);
             }
+            
+            // Trigger real alarm scheduling
+            if (context instanceof android.app.Activity) {
+                ((MainActivity) context).scheduleRealPrayerAlarms();
+            }
         }
     }
     

@@ -18,6 +18,12 @@ public class PrayerAlarmManager {
     private static final String[] PRAYER_NAMES = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"};
     
     public static void scheduleAllPrayerAlarms(Context context, PrayerTimes prayerTimes) {
+        // Skip if in testing mode
+        if (TestingManager.isTestingMode(context)) {
+            android.util.Log.d("PrayerAlarm", "Skipping real alarms - testing mode active");
+            return;
+        }
+        
         if (!SettingsManager.getAdanEnabled()) {
             cancelAllAlarms(context);
             return;
@@ -47,8 +53,9 @@ public class PrayerAlarmManager {
     
     private static void scheduleAlarm(Context context, AlarmManager alarmManager, String time, String prayerName, int requestCode) {
         try {
-            SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.getDefault());
-            Date prayerTime = format.parse(time);
+            // Always parse as 24-hour (yabiladi.com format)
+            SimpleDateFormat inputFormat = new SimpleDateFormat("HH:mm", Locale.US);
+            Date prayerTime = inputFormat.parse(time);
             
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(prayerTime);
@@ -63,6 +70,11 @@ public class PrayerAlarmManager {
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
             }
             
+            // Format display time according to user's system preference
+            boolean is24Hour = android.text.format.DateFormat.is24HourFormat(context);
+            SimpleDateFormat displayFormat = new SimpleDateFormat(is24Hour ? "HH:mm" : "h:mm a", Locale.getDefault());
+            String displayTime = displayFormat.format(calendar.getTime());
+            
             Intent intent = new Intent(context, PrayerAlarmReceiver.class);
             intent.putExtra("prayer_name", prayerName);
             
@@ -75,13 +87,13 @@ public class PrayerAlarmManager {
                 } else {
                     alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
                 }
-                android.util.Log.d("PrayerAlarm", "Scheduled " + prayerName + " alarm for " + calendar.getTime());
+                android.util.Log.d("PrayerAlarm", "Scheduled " + prayerName + " alarm for " + displayTime + " (" + calendar.getTime() + ")");
             } catch (SecurityException e) {
                 android.util.Log.e("PrayerAlarm", "Permission denied for exact alarms", e);
             }
             
         } catch (Exception e) {
-            e.printStackTrace();
+            android.util.Log.e("PrayerAlarm", "Error scheduling alarm for " + prayerName + ": " + e.getMessage(), e);
         }
     }
     
