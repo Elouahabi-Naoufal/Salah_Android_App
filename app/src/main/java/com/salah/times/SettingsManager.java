@@ -111,6 +111,31 @@ public class SettingsManager {
         return settings.optBoolean("adan_enabled", true);
     }
     
+    public static void setIqamaDelay(String prayer, int minutes) {
+        JSONObject settings = loadSettings();
+        try {
+            JSONObject iqamaDelays = settings.optJSONObject("iqama_delays");
+            if (iqamaDelays == null) {
+                iqamaDelays = new JSONObject();
+            }
+            iqamaDelays.put(prayer.toLowerCase(), minutes);
+            settings.put("iqama_delays", iqamaDelays);
+            settings.put("last_modified", getCurrentTimestamp());
+            saveSettings(settings);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static int getIqamaDelay(String prayer) {
+        JSONObject settings = loadSettings();
+        JSONObject iqamaDelays = settings.optJSONObject("iqama_delays");
+        if (iqamaDelays != null) {
+            return iqamaDelays.optInt(prayer.toLowerCase(), 10);
+        }
+        return 10; // Default 10 minutes
+    }
+    
     private static JSONObject loadSettings() {
         try {
             if (!SETTINGS_FILE.exists()) {
@@ -151,6 +176,15 @@ public class SettingsManager {
             defaults.put("theme", "auto");
             defaults.put("auto_update", true);
             defaults.put("adan_enabled", true);
+            
+            // Default iqama delays (10 minutes for all prayers)
+            JSONObject iqamaDelays = new JSONObject();
+            iqamaDelays.put("fajr", 10);
+            iqamaDelays.put("dhuhr", 10);
+            iqamaDelays.put("asr", 10);
+            iqamaDelays.put("maghrib", 5);
+            iqamaDelays.put("isha", 10);
+            defaults.put("iqama_delays", iqamaDelays);
             defaults.put("created", getCurrentTimestamp());
             defaults.put("last_modified", getCurrentTimestamp());
             saveSettings(defaults);

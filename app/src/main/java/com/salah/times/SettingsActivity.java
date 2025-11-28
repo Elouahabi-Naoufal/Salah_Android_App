@@ -58,7 +58,7 @@ public class SettingsActivity extends AppCompatActivity {
         
         // Iqama Settings
         addSettingItem(container, "◷", TranslationManager.tr("settings_items.iqama_delays"), TranslationManager.tr("settings_items.iqama_description"), v -> {
-            // Show iqama dialog
+            showIqamaDialog();
         });
         
         addDivider(container);
@@ -203,6 +203,59 @@ public class SettingsActivity extends AppCompatActivity {
         boolean enabled = !SettingsManager.getAdanEnabled();
         SettingsManager.setAdanEnabled(enabled);
         recreate();
+    }
+    
+    private void showIqamaDialog() {
+        String[] prayers = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"};
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 20, 50, 20);
+        
+        for (String prayer : prayers) {
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            
+            TextView label = new TextView(this);
+            label.setText(prayer + ":");
+            label.setTextSize(16);
+            label.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+            
+            EditText input = new EditText(this);
+            input.setText(String.valueOf(SettingsManager.getIqamaDelay(prayer)));
+            input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+            input.setLayoutParams(new LinearLayout.LayoutParams(100, LinearLayout.LayoutParams.WRAP_CONTENT));
+            input.setTag(prayer);
+            
+            TextView minLabel = new TextView(this);
+            minLabel.setText(" min");
+            minLabel.setTextSize(14);
+            
+            row.addView(label);
+            row.addView(input);
+            row.addView(minLabel);
+            layout.addView(row);
+        }
+        
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Iqama Delays")
+            .setView(layout)
+            .setPositiveButton("Save", (dialog, which) -> {
+                for (int i = 0; i < layout.getChildCount(); i++) {
+                    LinearLayout row = (LinearLayout) layout.getChildAt(i);
+                    EditText input = (EditText) row.getChildAt(1);
+                    String prayer = (String) input.getTag();
+                    try {
+                        int minutes = Integer.parseInt(input.getText().toString());
+                        SettingsManager.setIqamaDelay(prayer, minutes);
+                    } catch (NumberFormatException e) {
+                        // Keep default value
+                    }
+                }
+                Toast.makeText(this, "Iqama delays saved", Toast.LENGTH_SHORT).show();
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
     
 

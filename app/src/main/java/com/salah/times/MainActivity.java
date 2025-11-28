@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView hijriText;
 
     private TextView countdownText;
+    private TextView iqamaCountdown;
     private RecyclerView prayerGrid;
     private Handler handler = new Handler();
     private Runnable updateTimeRunnable;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         dateText = findViewById(R.id.date_text);
         hijriText = findViewById(R.id.hijri_text);
         countdownText = findViewById(R.id.countdown_text);
+        iqamaCountdown = findViewById(R.id.iqama_countdown);
         prayerGrid = findViewById(R.id.prayer_grid);
         
         // Set current city name and app title
@@ -448,9 +450,38 @@ public class MainActivity extends AppCompatActivity {
                 String countdown = String.format("%02d:%02d:%02d", hours, minutes, seconds);
                 countdownText.setText(countdown);
                 
+                // Update iqama countdown
+                updateIqamaCountdown(nextPrayer, remainingMinutes, seconds);
+                
             } catch (java.text.ParseException e) {
                 countdownText.setText("--:--:--");
+                iqamaCountdown.setText("");
             }
         }
+    }
+    
+    private void updateIqamaCountdown(String nextPrayer, int remainingMinutes, int seconds) {
+        int iqamaDelayMinutes = SettingsManager.getIqamaDelay(nextPrayer);
+        
+        // Show iqama countdown only when prayer time has passed and within iqama delay
+        if (remainingMinutes <= 0 && Math.abs(remainingMinutes) < iqamaDelayMinutes) {
+            int iqamaRemainingMinutes = iqamaDelayMinutes + remainingMinutes;
+            int iqamaRemainingSeconds = 60 - seconds;
+            
+            if (iqamaRemainingMinutes > 0 || (iqamaRemainingMinutes == 0 && iqamaRemainingSeconds > 0)) {
+                if (iqamaRemainingSeconds == 60) {
+                    iqamaRemainingSeconds = 0;
+                } else if (iqamaRemainingMinutes > 0) {
+                    iqamaRemainingMinutes--;
+                }
+                
+                String iqamaText = TranslationManager.tr("settings_items.iqama_in") + " " + String.format("%02d:%02d", iqamaRemainingMinutes, iqamaRemainingSeconds);
+                iqamaCountdown.setText(iqamaText);
+                iqamaCountdown.setTextColor(getColor(android.R.color.holo_red_light));
+                return;
+            }
+        }
+        
+        iqamaCountdown.setText("");
     }
 }
