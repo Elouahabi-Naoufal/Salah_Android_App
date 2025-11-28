@@ -272,20 +272,10 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void updateHijriDate() {
-        HijriDateManager.fetchHijriDate()
-            .thenAccept(hijriDate -> runOnUiThread(() -> {
-                if (hijriText != null) {
-                    hijriText.setText(hijriDate);
-                }
-            }))
-            .exceptionally(throwable -> {
-                runOnUiThread(() -> {
-                    if (hijriText != null) {
-                        hijriText.setText(TranslationManager.tr("hijri.hijri_unavailable"));
-                    }
-                });
-                return null;
-            });
+        String hijriDate = HijriDateManager.getHijriDate();
+        if (hijriText != null) {
+            hijriText.setText(hijriDate);
+        }
     }
     
     private String getTimeForPrayer(String prayer, PrayerTimes prayerTimes) {
