@@ -15,7 +15,7 @@ public class SettingsActivity extends AppCompatActivity {
         
         ThemeManager.applyTheme();
         
-        setContentView(R.layout.activity_settings);
+        setContentView(R.layout.activity_settings_modern);
         
         getSupportActionBar().setTitle(TranslationManager.tr("settings"));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -24,51 +24,134 @@ public class SettingsActivity extends AppCompatActivity {
     }
     
     private void setupSettings() {
-        LinearLayout container = findViewById(R.id.settings_container);
+        setupPersonalizationSection();
+        setupNotificationsSection();
+        setupPrayerSection();
+        setupAdvancedSection();
+    }
+    
+    private void setupPersonalizationSection() {
+        LinearLayout container = findViewById(R.id.settings_personalization);
         
         // Language Setting
-        addSettingItem(container, "◉", TranslationManager.tr("settings_items.language"), getLanguageDescription(), v -> showLanguageDialog());
+        addModernSettingItem(container, "🌐", TranslationManager.tr("settings_items.language"), getLanguageDescription(), v -> showLanguageDialog());
         
         // Theme Setting
-        addSettingItem(container, "◐", TranslationManager.tr("settings_items.theme"), getThemeDescription(), v -> showThemeDialog());
+        addModernSettingItem(container, "🎨", TranslationManager.tr("settings_items.theme"), getThemeDescription(), v -> showThemeDialog());
         
         // City Setting
         String currentCityEn = SettingsManager.getDefaultCity();
         City currentCityObj = CitiesData.getCityByName(currentCityEn);
         String cityDisplayName = currentCityObj.getName(TranslationManager.getCurrentLanguage());
-        addSettingItem(container, "●", TranslationManager.tr("settings_items.default_city"), cityDisplayName, v -> {
+        addModernSettingItem(container, "📍", TranslationManager.tr("settings_items.default_city"), cityDisplayName, v -> {
             Intent intent = new Intent(this, CitySelectionActivity.class);
             startActivityForResult(intent, 100);
         });
-        
-        addDivider(container);
+    }
+    
+    private void setupNotificationsSection() {
+        LinearLayout container = findViewById(R.id.settings_notifications);
         
         // Notifications
-        addSettingItem(container, "◉", TranslationManager.tr("settings_items.notifications"), 
+        addModernSettingItem(container, "🔔", TranslationManager.tr("settings_items.notifications"), 
             SettingsManager.getNotificationsEnabled() ? TranslationManager.tr("settings_items.notifications_enabled") : TranslationManager.tr("settings_items.notifications_disabled"), 
             v -> toggleNotifications());
         
         // Adhan Notifications
-        addSettingItem(container, "🔔", TranslationManager.tr("adhan_settings.prayer_alarms"), TranslationManager.tr("adhan_settings.configure_description"), v -> {
+        addModernSettingItem(container, "📿", TranslationManager.tr("adhan_settings.prayer_alarms"), TranslationManager.tr("adhan_settings.configure_description"), v -> {
             Intent intent = new Intent(this, AdhanSettingsActivity.class);
             startActivity(intent);
         });
-        
-
-        
-        addDivider(container);
+    }
+    
+    private void setupPrayerSection() {
+        LinearLayout container = findViewById(R.id.settings_prayer);
         
         // Iqama Settings
-        addSettingItem(container, "◷", TranslationManager.tr("settings_items.iqama_delays"), TranslationManager.tr("settings_items.iqama_description"), v -> {
+        addModernSettingItem(container, "⏰", TranslationManager.tr("settings_items.iqama_delays"), TranslationManager.tr("settings_items.iqama_description"), v -> {
             showIqamaDialog();
         });
+    }
+    
+    private void setupAdvancedSection() {
+        LinearLayout container = findViewById(R.id.settings_advanced);
         
-        addDivider(container);
+        // Update All Cities
+        addModernSettingItem(container, "🌍", TranslationManager.tr("settings_items.update_all_cities"), TranslationManager.tr("settings_items.update_description"), v -> updateAllCities());
         
-        // Actions
-        addSettingItem(container, "↻", TranslationManager.tr("settings_items.update_all_cities"), TranslationManager.tr("settings_items.update_description"), v -> updateAllCities());
-        addSettingItem(container, "◯", TranslationManager.tr("settings_items.clear_cache"), TranslationManager.tr("settings_items.cache_description"), v -> clearCache());
-        addSettingItem(container, "↻", TranslationManager.tr("settings_items.restart_app"), TranslationManager.tr("settings_items.restart_description"), v -> restartApp());
+        // Clear Cache
+        addModernSettingItem(container, "🗑️", TranslationManager.tr("settings_items.clear_cache"), TranslationManager.tr("settings_items.cache_description"), v -> clearCache());
+        
+        // Restart App
+        addModernSettingItem(container, "🔄", TranslationManager.tr("settings_items.restart_app"), TranslationManager.tr("settings_items.restart_description"), v -> restartApp());
+    }
+    
+    private void addModernSettingItem(LinearLayout container, String icon, String title, String subtitle, View.OnClickListener listener) {
+        LinearLayout item = new LinearLayout(this);
+        item.setOrientation(LinearLayout.HORIZONTAL);
+        item.setPadding(20, 16, 20, 16);
+        item.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        item.setClickable(true);
+        item.setFocusable(true);
+        
+        // Modern ripple effect
+        android.util.TypedValue outValue = new android.util.TypedValue();
+        getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+        item.setBackgroundResource(outValue.resourceId);
+        item.setOnClickListener(listener);
+        
+        // Modern icon with background
+        LinearLayout iconContainer = new LinearLayout(this);
+        iconContainer.setLayoutParams(new LinearLayout.LayoutParams(56, 56));
+        iconContainer.setGravity(android.view.Gravity.CENTER);
+        iconContainer.setBackground(getDrawable(R.drawable.circle_button));
+        
+        TextView iconView = new TextView(this);
+        iconView.setText(icon);
+        iconView.setTextSize(20);
+        iconView.setTextColor(getColor(R.color.white));
+        iconContainer.addView(iconView);
+        item.addView(iconContainer);
+        
+        // Text container with better spacing
+        LinearLayout textContainer = new LinearLayout(this);
+        textContainer.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+        textParams.setMarginStart(20);
+        textContainer.setLayoutParams(textParams);
+        
+        TextView titleView = new TextView(this);
+        titleView.setText(title);
+        titleView.setTextSize(16);
+        titleView.setTextColor(getColor(R.color.text_primary));
+        titleView.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD);
+        textContainer.addView(titleView);
+        
+        TextView subtitleView = new TextView(this);
+        subtitleView.setText(subtitle);
+        subtitleView.setTextSize(13);
+        subtitleView.setTextColor(getColor(R.color.text_secondary));
+        LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        subtitleParams.topMargin = 2;
+        subtitleView.setLayoutParams(subtitleParams);
+        textContainer.addView(subtitleView);
+        
+        item.addView(textContainer);
+        
+        // Modern arrow
+        TextView arrow = new TextView(this);
+        arrow.setText("›");
+        arrow.setTextSize(24);
+        arrow.setTextColor(getColor(R.color.primary_green));
+        arrow.setAlpha(0.7f);
+        item.addView(arrow);
+        
+        container.addView(item);
+        
+        // Add spacing between items
+        View spacer = new View(this);
+        spacer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 8));
+        container.addView(spacer);
     }
     
     private void addSettingItem(LinearLayout container, String icon, String title, String subtitle, View.OnClickListener listener) {
@@ -131,23 +214,7 @@ public class SettingsActivity extends AppCompatActivity {
         container.addView(item);
     }
     
-    private void addDivider(LinearLayout container) {
-        View spacer = new View(this);
-        spacer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 24));
-        container.addView(spacer);
-        
-        View divider = new View(this);
-        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
-        dividerParams.setMargins(24, 0, 24, 0);
-        divider.setLayoutParams(dividerParams);
-        divider.setBackgroundColor(getColor(R.color.divider));
-        divider.setAlpha(0.3f);
-        container.addView(divider);
-        
-        View spacer2 = new View(this);
-        spacer2.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 8));
-        container.addView(spacer2);
-    }
+
     
     private String getLanguageDescription() {
         return TranslationManager.getLanguageName(SettingsManager.getLanguage());
