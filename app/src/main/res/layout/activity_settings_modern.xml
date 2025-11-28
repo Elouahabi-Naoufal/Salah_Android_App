@@ -28,6 +28,7 @@
                 android:padding="24dp">
 
                 <TextView
+                    android:id="@+id/personalization_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Personalization"
@@ -62,6 +63,7 @@
                 android:padding="24dp">
 
                 <TextView
+                    android:id="@+id/notifications_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Notifications &amp; Alarms"
@@ -96,6 +98,7 @@
                 android:padding="24dp">
 
                 <TextView
+                    android:id="@+id/prayer_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Prayer Settings"
@@ -130,6 +133,7 @@
                 android:padding="24dp">
 
                 <TextView
+                    android:id="@+id/advanced_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Advanced"

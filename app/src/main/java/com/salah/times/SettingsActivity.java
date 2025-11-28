@@ -20,7 +20,22 @@ public class SettingsActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(TranslationManager.tr("settings"));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         
+        setupSectionTitles();
         setupSettings();
+    }
+    
+    private void setupSectionTitles() {
+        TextView personalizationTitle = findViewById(R.id.personalization_title);
+        personalizationTitle.setText(TranslationManager.tr("personalization.personalization"));
+        
+        TextView notificationsTitle = findViewById(R.id.notifications_title);
+        notificationsTitle.setText(TranslationManager.tr("settings_items.notifications") + " & " + TranslationManager.tr("alarms.alarm_settings"));
+        
+        TextView prayerTitle = findViewById(R.id.prayer_title);
+        prayerTitle.setText(TranslationManager.tr("personalization.prayer_settings"));
+        
+        TextView advancedTitle = findViewById(R.id.advanced_title);
+        advancedTitle.setText(TranslationManager.tr("personalization.advanced_settings"));
     }
     
     private void setupSettings() {
