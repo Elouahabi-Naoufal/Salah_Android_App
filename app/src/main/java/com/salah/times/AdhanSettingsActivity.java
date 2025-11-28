@@ -3,6 +3,11 @@ package com.salah.times;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class AdhanSettingsActivity extends AppCompatActivity {
@@ -11,6 +16,10 @@ public class AdhanSettingsActivity extends AppCompatActivity {
     private LinearLayout prayersContainer;
     private TextView ringtoneName;
     private SeekBar volumeSeekBar;
+    private MediaPlayer previewPlayer;
+    private Ringtone previewRingtone;
+    private android.os.Handler previewHandler = new android.os.Handler();
+    private Runnable previewRunnable;
     
     private String[] prayers = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"};
     private String[] prayerIcons = {"☽", "☉", "☀", "☾", "★"};
@@ -111,6 +120,8 @@ public class AdhanSettingsActivity extends AppCompatActivity {
         prayerSwitch.setChecked(SettingsManager.getPrayerAlarmEnabled(prayer));
         prayerSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SettingsManager.setPrayerAlarmEnabled(prayer, isChecked);
+            // Reschedule alarms to apply changes immediately
+            rescheduleAlarms();
         });
         item.addView(prayerSwitch);
         
@@ -169,15 +180,99 @@ public class AdhanSettingsActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
                     SettingsManager.setAdhanVolume(progress);
+                    
+                    // Cancel previous preview
+                    stopPreview();
+                    if (previewRunnable != null) {
+                        previewHandler.removeCallbacks(previewRunnable);
+                    }
+                    
+                    // Schedule new preview with delay
+                    previewRunnable = () -> playVolumePreview(progress);
+                    previewHandler.postDelayed(previewRunnable, 300);
                 }
             }
             
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                stopPreview();
+            }
             
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // Don't play on stop - only on delay
+            }
         });
+    }
+    
+    private void playVolumePreview(int volume) {
+        if (volume == 0) return;
+        
+        int ringtoneType = SettingsManager.getAdhanRingtone();
+        float volumeLevel = volume / 100.0f;
+        
+        try {
+            if (ringtoneType == 0) { // Adhan
+                Uri adhanUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.adhan);
+                previewRingtone = RingtoneManager.getRingtone(this, adhanUri);
+                if (previewRingtone != null) {
+                    previewRingtone.setVolume(volumeLevel);
+                    previewRingtone.play();
+                    
+                    previewHandler.postDelayed(() -> {
+                        if (previewRingtone != null && previewRingtone.isPlaying()) {
+                            previewRingtone.stop();
+                        }
+                    }, 1500);
+                }
+            } else { // System sounds
+                stopPreview(); // Stop any existing ringtone
+                
+                Uri uri = ringtoneType == 1 ? 
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM) :
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    
+                if (uri != null) {
+                    previewRingtone = RingtoneManager.getRingtone(this, uri);
+                    if (previewRingtone != null) {
+                        previewRingtone.setVolume(volumeLevel);
+                        previewRingtone.play();
+                        
+                        previewHandler.postDelayed(() -> {
+                            if (previewRingtone != null && previewRingtone.isPlaying()) {
+                                previewRingtone.stop();
+                            }
+                        }, 1500);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("AdhanSettings", "Error playing volume preview: " + e.getMessage());
+        }
+    }
+    
+    private void stopPreview() {
+        // Stop MediaPlayer completely for adhan
+        if (previewPlayer != null) {
+            try {
+                if (previewPlayer.isPlaying()) {
+                    previewPlayer.stop();
+                }
+            } catch (Exception e) {
+                android.util.Log.e("AdhanSettings", "Error stopping preview player", e);
+            }
+        }
+        
+        if (previewRingtone != null) {
+            try {
+                if (previewRingtone.isPlaying()) {
+                    previewRingtone.stop();
+                }
+            } catch (Exception e) {
+                android.util.Log.e("AdhanSettings", "Error stopping preview ringtone", e);
+            }
+            previewRingtone = null;
+        }
     }
     
     private String getPrayerTimeDisplay(String prayer) {
@@ -221,6 +316,51 @@ public class AdhanSettingsActivity extends AppCompatActivity {
             }
         }
         return "--:--";
+    }
+    
+    private void rescheduleAlarms() {
+        // Get current prayer times and reschedule alarms
+        City defaultCity = CitiesData.getCityByName(SettingsManager.getDefaultCity());
+        if (defaultCity != null) {
+            try {
+                org.json.JSONObject cachedData = StorageManager.loadCityData(defaultCity.getNameEn());
+                if (cachedData != null) {
+                    String today = new java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault()).format(new java.util.Date());
+                    org.json.JSONObject prayerTimesJson = cachedData.getJSONObject("prayer_times");
+                    if (prayerTimesJson.has(today)) {
+                        org.json.JSONObject todayPrayers = prayerTimesJson.getJSONObject(today);
+                        PrayerTimes prayerTimes = new PrayerTimes(
+                            todayPrayers.getString("Date"),
+                            todayPrayers.getString("Fajr"),
+                            "00:00",
+                            todayPrayers.getString("Dohr"),
+                            todayPrayers.getString("Asr"),
+                            todayPrayers.getString("Maghreb"),
+                            todayPrayers.getString("Isha")
+                        );
+                        PrayerAlarmManager.scheduleAllPrayerAlarms(this, prayerTimes);
+                    }
+                }
+            } catch (Exception e) {
+                android.util.Log.e("AdhanSettings", "Error rescheduling alarms: " + e.getMessage());
+            }
+        }
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopPreview();
+        
+        // Release MediaPlayer on destroy
+        if (previewPlayer != null) {
+            try {
+                previewPlayer.release();
+            } catch (Exception e) {
+                android.util.Log.e("AdhanSettings", "Error releasing preview player", e);
+            }
+            previewPlayer = null;
+        }
     }
     
     @Override

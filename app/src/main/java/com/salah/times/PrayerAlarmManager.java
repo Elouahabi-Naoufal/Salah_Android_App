@@ -47,7 +47,10 @@ public class PrayerAlarmManager {
         cancelAllAlarms(context);
         
         for (int i = 0; i < times.length; i++) {
-            scheduleAlarm(context, alarmManager, times[i], PRAYER_NAMES[i], PRAYER_REQUEST_CODES[i]);
+            // Only schedule if this prayer alarm is enabled
+            if (SettingsManager.getPrayerAlarmEnabled(PRAYER_NAMES[i])) {
+                scheduleAlarm(context, alarmManager, times[i], PRAYER_NAMES[i], PRAYER_REQUEST_CODES[i]);
+            }
         }
     }
     
