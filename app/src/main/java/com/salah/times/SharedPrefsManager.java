@@ -19,7 +19,7 @@ public class SharedPrefsManager {
     }
     
     public String getDefaultCity() {
-        return prefs.getString(KEY_DEFAULT_CITY, "Casablanca");
+        return prefs.getString(KEY_DEFAULT_CITY, "");
     }
     
     public void setLanguage(String language) {
@@ -27,6 +27,6 @@ public class SharedPrefsManager {
     }
     
     public String getLanguage() {
-        return prefs.getString(KEY_LANGUAGE, "en");
+        return prefs.getString(KEY_LANGUAGE, "ar");
     }
 }

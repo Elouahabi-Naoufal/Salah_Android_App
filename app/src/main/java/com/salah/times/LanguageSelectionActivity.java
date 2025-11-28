@@ -11,9 +11,6 @@ public class LanguageSelectionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Apply theme
-        ThemeManager.applyTheme();
-        
         // Hide action bar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
@@ -26,19 +23,15 @@ public class LanguageSelectionActivity extends AppCompatActivity {
     
     private void initViews() {
         TextView welcomeText = findViewById(R.id.welcome_text);
-        welcomeText.setText(TranslationManager.tr("missing_strings.welcome_with_icon"));
+        welcomeText.setText("🕌 مرحباً بك في مواقيت الصلاة");
         
         TextView instructionText = findViewById(R.id.instruction_text);
-        instructionText.setText(TranslationManager.tr("language_selection.select_language"));
+        instructionText.setText("يرجى اختيار لغتك المفضلة:");
         
         ListView languageList = findViewById(R.id.language_list);
         
-        String[] languages = TranslationManager.getAvailableLanguages();
-        String[] languageNames = new String[languages.length];
-        
-        for (int i = 0; i < languages.length; i++) {
-            languageNames[i] = TranslationManager.getLanguageName(languages[i]);
-        }
+        String[] languages = {"en", "ar", "fr", "es"};
+        String[] languageNames = {"English", "العربية", "Français", "Español"};
         
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_single_choice, languageNames);
         languageList.setAdapter(adapter);
@@ -46,12 +39,13 @@ public class LanguageSelectionActivity extends AppCompatActivity {
         languageList.setItemChecked(1, true); // Default to Arabic (index 1)
         
         Button continueButton = findViewById(R.id.continue_button);
-        continueButton.setText(TranslationManager.tr("continue"));
+        continueButton.setText("متابعة");
         continueButton.setOnClickListener(v -> {
             int selectedPosition = languageList.getCheckedItemPosition();
             if (selectedPosition >= 0) {
                 String selectedLanguage = languages[selectedPosition];
-                SettingsManager.setLanguage(selectedLanguage);
+                SharedPrefsManager prefsManager = new SharedPrefsManager(this);
+                prefsManager.setLanguage(selectedLanguage);
                 
                 // Go to city selection
                 Intent intent = new Intent(this, CitySelectionActivity.class);

@@ -20,9 +20,6 @@ public class CitySelectionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Apply theme
-        ThemeManager.applyTheme();
-        
         setContentView(R.layout.activity_city_selection);
         initViews();
         setupCityList();
@@ -30,22 +27,22 @@ public class CitySelectionActivity extends AppCompatActivity {
     
     private void initViews() {
         TextView welcomeText = findViewById(R.id.welcome_text);
-        welcomeText.setText(TranslationManager.tr("missing_strings.welcome_with_icon"));
+        welcomeText.setText("🕌 مرحباً بك في مواقيت الصلاة");
         
         TextView instructionText = findViewById(R.id.instruction_text);
-        instructionText.setText(TranslationManager.tr("missing_strings.select_city_instruction"));
+        instructionText.setText("يرجى اختيار مدينتك لمواقيت الصلاة:");
         
         searchInput = findViewById(R.id.search_input);
-        searchInput.setHint(TranslationManager.tr("city_selection.search_city"));
+        searchInput.setHint("ابحث عن مدينة...");
         
         cityList = findViewById(R.id.city_list);
         
         Button cancelButton = findViewById(R.id.cancel_button);
-        cancelButton.setText(TranslationManager.tr("cancel"));
+        cancelButton.setText("إلغاء");
         cancelButton.setOnClickListener(v -> finish());
         
         Button selectButton = findViewById(R.id.select_button);
-        selectButton.setText(TranslationManager.tr("missing_strings.set_as_default"));
+        selectButton.setText("تعيين كافتراضي");
         selectButton.setOnClickListener(v -> selectCity());
     }
     
@@ -62,13 +59,9 @@ public class CitySelectionActivity extends AppCompatActivity {
         cityList.setAdapter(adapter);
         cityList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         
-        // Default selection (Casablanca)
-        String defaultCity = SettingsManager.getDefaultCity();
-        for (int i = 0; i < allCities.size(); i++) {
-            if (allCities.get(i).getNameEn().equals(defaultCity)) {
-                cityList.setItemChecked(i, true);
-                break;
-            }
+        // Default selection - select first city
+        if (!allCities.isEmpty()) {
+            cityList.setItemChecked(0, true);
         }
         
         searchInput.addTextChangedListener(new TextWatcher() {
@@ -90,14 +83,12 @@ public class CitySelectionActivity extends AppCompatActivity {
         allCities.clear();
         
         String currentLang = TranslationManager.getCurrentLanguage();
-        
         if (query.isEmpty()) {
             allCities.addAll(CitiesData.getAllCities());
             for (City city : allCities) {
                 displayCities.add(city.getName(currentLang));
             }
         } else {
-            // Search in current language
             List<City> searchResults = CitiesData.searchCities(query, currentLang);
             allCities.addAll(searchResults);
             for (City city : searchResults) {
@@ -119,9 +110,7 @@ public class CitySelectionActivity extends AppCompatActivity {
             City selectedCity = allCities.get(selectedPosition);
             SettingsManager.setDefaultCity(selectedCity.getNameEn());
             
-            // Return to main activity
             Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
         }

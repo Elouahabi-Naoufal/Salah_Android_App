@@ -25,12 +25,12 @@ public class StoragePermissionActivity extends AppCompatActivity {
         TextView messageText = findViewById(R.id.permission_message);
         Button grantButton = findViewById(R.id.grant_permission_button);
         
-        messageText.setText("📱 Storage Permission Required\n\n" +
-                "Salah Times needs storage access for:\n" +
-                "• 📶 Offline prayer times (30+ days)\n" +
-                "• ⚙️ Settings backup\n" +
-                "• 🔔 Notification preferences\n\n" +
-                "Works completely offline after setup!");
+        messageText.setText("📱 مطلوب إذن التخزين\n\n" +
+                "تطبيق مواقيت الصلاة يحتاج الوصول للتخزين من أجل:\n" +
+                "• 📶 مواقيت الصلاة بدون إنترنت (30+ يوم)\n" +
+                "• ⚙️ نسخ احتياطي للإعدادات\n" +
+                "• 🔔 تفضيلات الإشعارات\n\n" +
+                "يعمل بدون إنترنت بعد الإعداد!");
         
         grantButton.setOnClickListener(v -> requestStoragePermission());
         
@@ -69,7 +69,18 @@ public class StoragePermissionActivity extends AppCompatActivity {
     
     private void proceedToMainApp() {
         createDirectoryStructure();
-        startActivity(new Intent(this, MainActivity.class));
+        
+        SharedPrefsManager prefsManager = new SharedPrefsManager(this);
+        String savedCity = prefsManager.getDefaultCity();
+        
+        // Check if user has selected a city
+        if (savedCity.isEmpty()) {
+            // First time - show city selection
+            startActivity(new Intent(this, CitySelectionActivity.class));
+        } else {
+            // User has selected a city - go to main app
+            startActivity(new Intent(this, MainActivity.class));
+        }
         finish();
     }
     

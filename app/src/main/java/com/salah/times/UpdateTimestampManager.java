@@ -24,10 +24,17 @@ public class UpdateTimestampManager {
     
     public boolean shouldUpdateData() {
         try {
+            // First check if we have all 43 cities
+            int existingCities = countExistingCityJsonFiles();
+            if (existingCities < 43) {
+                Log.d(TAG, "Missing cities: " + existingCities + "/43, update needed");
+                return true;
+            }
+            
+            // Only check date if we have all cities
             File timestampFile = new File(context.getFilesDir(), TIMESTAMP_FILE);
             if (!timestampFile.exists()) {
-                Log.d(TAG, "No timestamp file exists, update needed");
-                return true;
+                return false; // Have all cities, no need to update
             }
             
             FileInputStream fis = new FileInputStream(timestampFile);
@@ -36,27 +43,41 @@ public class UpdateTimestampManager {
             reader.close();
             
             if (updateInfo == null || !updateInfo.has("last_update")) {
-                Log.d(TAG, "Invalid timestamp data, update needed");
-                return true;
+                return false;
             }
             
             long lastUpdateTime = updateInfo.get("last_update").getAsLong();
             long currentTime = System.currentTimeMillis();
             long timeDifference = currentTime - lastUpdateTime;
             
-            boolean needsUpdate = timeDifference > TimeUnit.HOURS.toMillis(UPDATE_INTERVAL_HOURS);
-            
-            Log.d(TAG, "Last update: " + new Date(lastUpdateTime));
-            Log.d(TAG, "Hours since update: " + TimeUnit.MILLISECONDS.toHours(timeDifference));
-            Log.d(TAG, "Needs update: " + needsUpdate);
-            
-            return needsUpdate;
+            return timeDifference > TimeUnit.HOURS.toMillis(UPDATE_INTERVAL_HOURS);
             
         } catch (Exception e) {
-            Log.e(TAG, "Error checking update timestamp", e);
-            return true; // If we can't check, assume update is needed
+            return true;
         }
     }
+    
+    private int countExistingCityJsonFiles() {
+        try {
+            File citiesDir = new File(context.getFilesDir(), "salah_times/cities");
+            if (!citiesDir.exists()) {
+                return 0;
+            }
+            
+            int count = 0;
+            for (City city : CitiesData.getAllCities()) {
+                File cityFile = new File(citiesDir, city.getNameEn().toLowerCase() + ".json");
+                if (cityFile.exists()) {
+                    count++;
+                }
+            }
+            return count;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+
     
     public void saveUpdateTimestamp() {
         saveUpdateTimestamp(CitiesData.getAllCities().size());
@@ -66,7 +87,6 @@ public class UpdateTimestampManager {
         try {
             JsonObject updateInfo = new JsonObject();
             updateInfo.addProperty("last_update", System.currentTimeMillis());
-            updateInfo.addProperty("cities_updated", citiesUpdated);
             updateInfo.addProperty("update_date", getCurrentDateString());
             
             File timestampFile = new File(context.getFilesDir(), TIMESTAMP_FILE);
@@ -96,10 +116,9 @@ public class UpdateTimestampManager {
             
             if (updateInfo != null) {
                 long lastUpdate = updateInfo.has("last_update") ? updateInfo.get("last_update").getAsLong() : 0;
-                int citiesUpdated = updateInfo.has("cities_updated") ? updateInfo.get("cities_updated").getAsInt() : 0;
                 String updateDate = updateInfo.has("update_date") ? updateInfo.get("update_date").getAsString() : "Unknown";
                 
-                return new UpdateInfo(lastUpdate, citiesUpdated, updateDate);
+                return new UpdateInfo(lastUpdate, 0, updateDate);
             }
             
         } catch (Exception e) {

@@ -10,7 +10,7 @@
         android:id="@+id/welcome_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="🕌 Welcome to Salah Times"
+        android:text="🕌 مرحباً بك في مواقيت الصلاة"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/text_primary"
@@ -21,7 +21,7 @@
         android:id="@+id/instruction_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Please select your default city for prayer times:"
+        android:text="يرجى اختيار مدينتك لمواقيت الصلاة:"
         android:textSize="16sp"
         android:textColor="@color/text_secondary"
         android:gravity="center"
@@ -46,7 +46,7 @@
                 android:id="@+id/search_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Search for a city..."
+                android:hint="ابحث عن مدينة..."
                 android:padding="12dp"
                 android:background="@drawable/modern_button"
                 android:layout_marginBottom="16dp" />
@@ -72,7 +72,7 @@
             android:id="@+id/cancel_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
+            android:text="إلغاء"
             android:layout_marginEnd="8dp"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -80,7 +80,7 @@
             android:id="@+id/select_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Set as Default"
+            android:text="تعيين كافتراضي"
             android:background="@drawable/modern_button" />
 
     </LinearLayout>
