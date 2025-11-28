@@ -49,8 +49,8 @@ public class SettingsActivity extends AppCompatActivity {
             v -> toggleNotifications());
         
         // Adhan Notifications
-        addSettingItem(container, "🔔", "Adhan Notifications", "Configure prayer alarms", v -> {
-            Intent intent = new Intent(this, AdhanNotificationsActivity.class);
+        addSettingItem(container, "🔔", "Prayer Alarms", "Configure adhan notifications", v -> {
+            Intent intent = new Intent(this, AdhanSettingsActivity.class);
             startActivity(intent);
         });
         

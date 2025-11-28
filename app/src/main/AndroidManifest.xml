@@ -82,6 +82,12 @@
             android:theme="@style/Theme.SalahTimes"
             android:showWhenLocked="true"
             android:turnScreenOn="true" />
+            
+        <activity
+            android:name=".AdhanSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SalahTimes"
+            android:parentActivityName=".SettingsActivity" />
     </application>
 
 </manifest>

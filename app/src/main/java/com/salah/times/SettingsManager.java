@@ -111,6 +111,63 @@ public class SettingsManager {
         return settings.optBoolean("adan_enabled", true);
     }
     
+    public static void setPrayerAlarmEnabled(String prayer, boolean enabled) {
+        JSONObject settings = loadSettings();
+        try {
+            JSONObject prayerAlarms = settings.optJSONObject("prayer_alarms");
+            if (prayerAlarms == null) {
+                prayerAlarms = new JSONObject();
+            }
+            prayerAlarms.put(prayer.toLowerCase(), enabled);
+            settings.put("prayer_alarms", prayerAlarms);
+            settings.put("last_modified", getCurrentTimestamp());
+            saveSettings(settings);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static boolean getPrayerAlarmEnabled(String prayer) {
+        JSONObject settings = loadSettings();
+        JSONObject prayerAlarms = settings.optJSONObject("prayer_alarms");
+        if (prayerAlarms != null) {
+            return prayerAlarms.optBoolean(prayer.toLowerCase(), true);
+        }
+        return true;
+    }
+    
+    public static void setAdhanRingtone(int type) {
+        JSONObject settings = loadSettings();
+        try {
+            settings.put("adhan_ringtone", type);
+            settings.put("last_modified", getCurrentTimestamp());
+            saveSettings(settings);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static int getAdhanRingtone() {
+        JSONObject settings = loadSettings();
+        return settings.optInt("adhan_ringtone", 0);
+    }
+    
+    public static void setAdhanVolume(int volume) {
+        JSONObject settings = loadSettings();
+        try {
+            settings.put("adhan_volume", volume);
+            settings.put("last_modified", getCurrentTimestamp());
+            saveSettings(settings);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static int getAdhanVolume() {
+        JSONObject settings = loadSettings();
+        return settings.optInt("adhan_volume", 80);
+    }
+    
     public static void setIqamaDelay(String prayer, int minutes) {
         JSONObject settings = loadSettings();
         try {
