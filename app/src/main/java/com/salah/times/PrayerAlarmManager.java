@@ -19,12 +19,26 @@ public class PrayerAlarmManager {
     
     public static void scheduleAllPrayerAlarms(Context context, PrayerTimes prayerTimes) {
         if (!SettingsManager.getAdanEnabled()) {
+            cancelAllAlarms(context);
             return;
         }
         
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager == null) return;
+        
+        // Check if we can schedule exact alarms (Android 12+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!alarmManager.canScheduleExactAlarms()) {
+                android.util.Log.w("PrayerAlarm", "Cannot schedule exact alarms");
+                return;
+            }
+        }
+        
         String[] times = {prayerTimes.getFajr(), prayerTimes.getDhuhr(), prayerTimes.getAsr(), 
                          prayerTimes.getMaghrib(), prayerTimes.getIsha()};
+        
+        // Cancel existing alarms first
+        cancelAllAlarms(context);
         
         for (int i = 0; i < times.length; i++) {
             scheduleAlarm(context, alarmManager, times[i], PRAYER_NAMES[i], PRAYER_REQUEST_CODES[i]);
@@ -44,7 +58,8 @@ public class PrayerAlarmManager {
             calendar.set(Calendar.MONTH, now.get(Calendar.MONTH));
             calendar.set(Calendar.DAY_OF_MONTH, now.get(Calendar.DAY_OF_MONTH));
             
-            if (calendar.before(now)) {
+            // If prayer time has passed today, schedule for tomorrow
+            if (calendar.getTimeInMillis() <= now.getTimeInMillis()) {
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
             }
             
@@ -54,10 +69,15 @@ public class PrayerAlarmManager {
             PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, 
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
-            } else {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                } else {
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                }
+                android.util.Log.d("PrayerAlarm", "Scheduled " + prayerName + " alarm for " + calendar.getTime());
+            } catch (SecurityException e) {
+                android.util.Log.e("PrayerAlarm", "Permission denied for exact alarms", e);
             }
             
         } catch (Exception e) {
@@ -82,19 +102,30 @@ public class PrayerAlarmManager {
             if (alarmUri == null) {
                 alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             }
+            if (alarmUri == null) {
+                alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+            }
             
-            Ringtone ringtone = RingtoneManager.getRingtone(context, alarmUri);
-            ringtone.play();
-            
-            // Stop after 30 seconds
-            new android.os.Handler().postDelayed(() -> {
-                if (ringtone.isPlaying()) {
-                    ringtone.stop();
+            if (alarmUri != null) {
+                Ringtone ringtone = RingtoneManager.getRingtone(context, alarmUri);
+                if (ringtone != null) {
+                    ringtone.play();
+                    
+                    // Stop after 30 seconds
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        try {
+                            if (ringtone.isPlaying()) {
+                                ringtone.stop();
+                            }
+                        } catch (Exception e) {
+                            android.util.Log.e("PrayerAlarm", "Error stopping ringtone", e);
+                        }
+                    }, 30000);
                 }
-            }, 30000);
+            }
             
         } catch (Exception e) {
-            e.printStackTrace();
+            android.util.Log.e("PrayerAlarm", "Error playing alarm", e);
         }
     }
 }

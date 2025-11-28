@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
+import android.content.Context;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -201,6 +202,18 @@ public class SettingsActivity extends AppCompatActivity {
     
     private void toggleAdan() {
         boolean enabled = !SettingsManager.getAdanEnabled();
+        
+        if (enabled && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            android.app.AlarmManager alarmManager = (android.app.AlarmManager) getSystemService(ALARM_SERVICE);
+            if (!alarmManager.canScheduleExactAlarms()) {
+                // Request exact alarm permission
+                android.content.Intent intent = new android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+                Toast.makeText(this, "Please allow exact alarms for prayer notifications", Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
+        
         SettingsManager.setAdanEnabled(enabled);
         recreate();
     }
