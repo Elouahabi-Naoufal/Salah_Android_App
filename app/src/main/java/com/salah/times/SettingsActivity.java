@@ -48,10 +48,11 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsManager.getNotificationsEnabled() ? TranslationManager.tr("settings_items.notifications_enabled") : TranslationManager.tr("settings_items.notifications_disabled"), 
             v -> toggleNotifications());
         
-        // Adan Alarm
-        addSettingItem(container, "🔔", TranslationManager.tr("settings_items.adan"), 
-            SettingsManager.getAdanEnabled() ? TranslationManager.tr("settings_items.enabled") : TranslationManager.tr("settings_items.disabled"), 
-            v -> toggleAdan());
+        // Adhan Notifications
+        addSettingItem(container, "🔔", "Adhan Notifications", "Configure prayer alarms", v -> {
+            Intent intent = new Intent(this, AdhanNotificationsActivity.class);
+            startActivity(intent);
+        });
         
 
         
@@ -200,23 +201,7 @@ public class SettingsActivity extends AppCompatActivity {
         recreate();
     }
     
-    private void toggleAdan() {
-        boolean enabled = !SettingsManager.getAdanEnabled();
-        
-        if (enabled && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            android.app.AlarmManager alarmManager = (android.app.AlarmManager) getSystemService(ALARM_SERVICE);
-            if (!alarmManager.canScheduleExactAlarms()) {
-                // Request exact alarm permission
-                android.content.Intent intent = new android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-                startActivity(intent);
-                Toast.makeText(this, "Please allow exact alarms for prayer notifications", Toast.LENGTH_LONG).show();
-                return;
-            }
-        }
-        
-        SettingsManager.setAdanEnabled(enabled);
-        recreate();
-    }
+
     
     private void showIqamaDialog() {
         String[] prayers = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"};

@@ -54,6 +54,12 @@
             android:exported="false"
             android:theme="@style/Theme.SalahTimes" />
             
+        <activity
+            android:name=".AdhanNotificationsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SalahTimes"
+            android:parentActivityName=".MainActivity" />
+            
         <service
             android:name=".PrayerNotificationService"
             android:enabled="true"
@@ -64,6 +70,18 @@
             android:name=".PrayerAlarmReceiver"
             android:enabled="true"
             android:exported="false" />
+            
+        <receiver
+            android:name=".AdhanAlarmReceiver"
+            android:enabled="true"
+            android:exported="false" />
+            
+        <activity
+            android:name=".AdhanAlarmActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SalahTimes"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
     </application>
 
 </manifest>

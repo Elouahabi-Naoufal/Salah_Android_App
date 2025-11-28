@@ -31,6 +31,9 @@ public class SalahApplication extends Application {
     }
     
     private void initializeApplication() {
+        // Initialize SharedPrefsManager
+        SharedPrefsManager.init(this);
+        
         // Initialize TranslationManager
         TranslationManager.init(this);
         

@@ -55,4 +55,24 @@ public class NotificationManager {
     public void cancelNotifications() {
         notificationManager.cancel(NOTIFICATION_ID);
     }
+    
+    public static void showAdhanNotification(Context context, String prayer) {
+        android.app.NotificationManager notificationManager = 
+            (android.app.NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        
+        Intent intent = new Intent(context, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("🕌 Adhan - " + prayer.substring(0, 1).toUpperCase() + prayer.substring(1))
+            .setContentText("It's time for " + prayer + " prayer")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setVibrate(new long[]{0, 1000, 500, 1000});
+        
+        notificationManager.notify(2000 + prayer.hashCode(), builder.build());
+    }
 }
