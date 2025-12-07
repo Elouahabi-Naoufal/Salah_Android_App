@@ -228,8 +228,8 @@ public class MainActivity extends AppCompatActivity {
         // Apply test times if in testing mode
         this.currentPrayerTimes = TestingManager.getTestPrayerTimes(this, prayerTimes);
         
-        // Schedule prayer alarms
-        PrayerAlarmManager.scheduleAllPrayerAlarms(this, prayerTimes);
+        // Add alarms to system alarm app
+        AlarmAppIntegration.addPrayerAlarms(this, prayerTimes);
         
         // Fetch tomorrow's Fajr for countdown calculation
         City defaultCity = CitiesData.getCityByName(SettingsManager.getDefaultCity());
@@ -313,11 +313,6 @@ public class MainActivity extends AppCompatActivity {
         
         // Reload prayer times for new city
         loadPrayerTimes();
-        
-        // Reschedule alarms if prayer times changed
-        if (currentPrayerTimes != null) {
-            PrayerAlarmManager.scheduleAllPrayerAlarms(this, currentPrayerTimes);
-        }
     }
     
     @Override
@@ -489,12 +484,7 @@ public class MainActivity extends AppCompatActivity {
         iqamaCountdown.setText("");
     }
     
-    public void scheduleRealPrayerAlarms() {
-        if (currentPrayerTimes != null) {
-            PrayerAlarmManager.scheduleAllPrayerAlarms(this, currentPrayerTimes);
-            android.util.Log.d("MainActivity", "Real prayer alarms scheduled");
-        }
-    }
+
     
     private void showTestingDialog() {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
@@ -564,8 +554,7 @@ public class MainActivity extends AppCompatActivity {
             status.append("✓ Notifications: Not required (Android < 13)\n");
         }
         
-        // Check adhan enabled in settings
-        status.append("\nAdhan enabled: ").append(SettingsManager.getAdanEnabled() ? "YES" : "NO");
+
         
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         builder.setTitle("Permission Status")

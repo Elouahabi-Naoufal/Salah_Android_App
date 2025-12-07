@@ -72,11 +72,7 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsManager.getNotificationsEnabled() ? TranslationManager.tr("settings_items.notifications_enabled") : TranslationManager.tr("settings_items.notifications_disabled"), 
             v -> toggleNotifications());
         
-        // Adhan Notifications
-        addModernSettingItem(container, "📿", TranslationManager.tr("adhan_settings.prayer_alarms"), TranslationManager.tr("adhan_settings.configure_description"), v -> {
-            Intent intent = new Intent(this, AdhanSettingsActivity.class);
-            startActivity(intent);
-        });
+
     }
     
     private void setupPrayerSection() {

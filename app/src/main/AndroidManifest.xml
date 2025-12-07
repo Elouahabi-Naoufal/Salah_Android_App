@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <application
         android:name=".SalahApplication"
@@ -54,40 +55,11 @@
             android:exported="false"
             android:theme="@style/Theme.SalahTimes" />
             
-        <activity
-            android:name=".AdhanNotificationsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SalahTimes"
-            android:parentActivityName=".MainActivity" />
-            
         <service
             android:name=".PrayerNotificationService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
-            
-        <receiver
-            android:name=".PrayerAlarmReceiver"
-            android:enabled="true"
-            android:exported="false" />
-            
-        <receiver
-            android:name=".AdhanAlarmReceiver"
-            android:enabled="true"
-            android:exported="false" />
-            
-        <activity
-            android:name=".AdhanAlarmActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SalahTimes"
-            android:showWhenLocked="true"
-            android:turnScreenOn="true" />
-            
-        <activity
-            android:name=".AdhanSettingsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SalahTimes"
-            android:parentActivityName=".SettingsActivity" />
             
         <activity
             android:name=".AdhkarActivity"

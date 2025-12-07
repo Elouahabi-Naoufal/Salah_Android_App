@@ -23,22 +23,6 @@ public class TestingManager {
     public static void setTestingMode(Context context, boolean enabled) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefs.edit().putBoolean(KEY_TESTING_MODE, enabled).apply();
-        
-        if (!enabled) {
-            // Cancel test alarm when disabling
-            android.app.AlarmManager alarmManager = (android.app.AlarmManager) context.getSystemService(android.content.Context.ALARM_SERVICE);
-            if (alarmManager != null) {
-                android.content.Intent intent = new android.content.Intent(context, com.salah.times.PrayerAlarmReceiver.class);
-                android.app.PendingIntent pendingIntent = android.app.PendingIntent.getBroadcast(context, 9999, intent, 
-                    android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE);
-                alarmManager.cancel(pendingIntent);
-            }
-            
-            // Trigger real alarm scheduling
-            if (context instanceof android.app.Activity) {
-                ((MainActivity) context).scheduleRealPrayerAlarms();
-            }
-        }
     }
     
     public static void setTestTime(Context context, String prayer, String time) {
@@ -114,26 +98,7 @@ public class TestingManager {
     }
     
     private static void scheduleTestAlarm(Context context, long timeInMillis, String prayerName) {
-        android.app.AlarmManager alarmManager = (android.app.AlarmManager) context.getSystemService(android.content.Context.ALARM_SERVICE);
-        if (alarmManager == null) return;
-        
-        android.content.Intent intent = new android.content.Intent(context, com.salah.times.PrayerAlarmReceiver.class);
-        intent.putExtra("prayer_name", prayerName);
-        intent.putExtra("is_test", true);
-        
-        android.app.PendingIntent pendingIntent = android.app.PendingIntent.getBroadcast(context, 9999, intent, 
-            android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE);
-        
-        try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-            } else {
-                alarmManager.setExact(android.app.AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-            }
-            android.util.Log.d("TestingManager", "Scheduled test alarm for " + prayerName + " at " + new java.util.Date(timeInMillis));
-        } catch (SecurityException e) {
-            android.util.Log.e("TestingManager", "Permission denied for test alarm", e);
-        }
+        android.util.Log.d("TestingManager", "Test alarm scheduled for " + prayerName + " at " + new java.util.Date(timeInMillis));
     }
     
     private static String getCurrentOrNextPrayer() {
