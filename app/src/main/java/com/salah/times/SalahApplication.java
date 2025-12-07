@@ -31,11 +31,14 @@ public class SalahApplication extends Application {
     }
     
     private void initializeApplication() {
-        // Initialize SharedPrefsManager
+        // Initialize managers
         SharedPrefsManager.init(this);
-        
-        // Initialize TranslationManager
         TranslationManager.init(this);
+        StorageManager.init(this);
+        SettingsManager.init(this);
+        
+        // Run migration
+        MigrationHelper.migrateIfNeeded(this);
         
         // Set application metadata
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -55,9 +58,21 @@ public class SalahApplication extends Application {
             .putLong("install_time", System.currentTimeMillis())
             .apply();
         
-        // Initialize default settings
-        SettingsManager.setDefaultCity("Casablanca");
-        SettingsManager.setLanguage("ar");
+        // Initialize default settings in database
+        DatabaseHelper db = DatabaseHelper.getInstance(this);
+        db.saveSetting("default_city", "Casablanca");
+        db.saveSetting("language", "ar");
+        db.saveSetting("notifications_enabled", "true");
+        db.saveSetting("theme", "auto");
+        db.saveSetting("auto_update", "true");
+        db.saveSetting("adan_enabled", "true");
+        
+        // Set default iqama delays
+        db.setIqamaDelay("fajr", 10);
+        db.setIqamaDelay("dhuhr", 10);
+        db.setIqamaDelay("asr", 10);
+        db.setIqamaDelay("maghrib", 5);
+        db.setIqamaDelay("isha", 10);
         
         Log.d(TAG, "First run setup completed");
     }

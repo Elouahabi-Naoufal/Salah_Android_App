@@ -2,28 +2,86 @@ package com.salah.times;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.provider.AlarmClock;
 import android.widget.Toast;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class AlarmAppIntegration {
-    private static final String PREFS_NAME = "alarm_prefs";
-    private static final String KEY_ALARMS_SET = "alarms_set_";
     
     public static void addPrayerAlarms(Context context, PrayerTimes prayerTimes) {
-        String date = prayerTimes.getDate();
-        if (areAlarmsSet(context, date)) return;
+        String nextPrayer = getNextPrayer(prayerTimes);
         
-        boolean success = true;
-        success &= addAlarm(context, "Fajr", prayerTimes.getFajr());
-        success &= addAlarm(context, "Dhuhr", prayerTimes.getDhuhr());
-        success &= addAlarm(context, "Asr", prayerTimes.getAsr());
-        success &= addAlarm(context, "Maghrib", prayerTimes.getMaghrib());
-        success &= addAlarm(context, "Isha", prayerTimes.getIsha());
-        
-        if (success) {
-            markAlarmsSet(context, date);
+        // If no prayer left today, set Fajr for tomorrow
+        if (nextPrayer == null) {
+            nextPrayer = "Fajr";
+            String tomorrow = getTomorrowDate();
+            PrayerTimes tomorrowTimes = DatabaseHelper.getInstance(context).loadPrayerTimes(
+                SettingsManager.getDefaultCity(), tomorrow);
+            
+            if (tomorrowTimes != null) {
+                String lastSetPrayer = getLastSetPrayer(context);
+                if (!"Fajr_tomorrow".equals(lastSetPrayer)) {
+                    if (addAlarm(context, nextPrayer, tomorrowTimes.getFajr())) {
+                        markPrayerSet(context, "Fajr_tomorrow");
+                    }
+                }
+            }
+            return;
         }
+        
+        String lastSetPrayer = getLastSetPrayer(context);
+        if (nextPrayer.equals(lastSetPrayer)) return;
+        
+        String time = getTimeForPrayer(nextPrayer, prayerTimes);
+        if (addAlarm(context, nextPrayer, time)) {
+            markPrayerSet(context, nextPrayer);
+        }
+    }
+    
+    private static String getTomorrowDate() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.getTime());
+    }
+    
+    private static String getNextPrayer(PrayerTimes prayerTimes) {
+        try {
+            Calendar now = Calendar.getInstance();
+            int currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+            
+            String[] prayers = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"};
+            String[] times = {prayerTimes.getFajr(), prayerTimes.getDhuhr(), prayerTimes.getAsr(), 
+                             prayerTimes.getMaghrib(), prayerTimes.getIsha()};
+            
+            for (int i = 0; i < prayers.length; i++) {
+                int prayerMinutes = timeToMinutes(times[i]);
+                if (prayerMinutes > currentMinutes) {
+                    return prayers[i];
+                }
+            }
+            
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    private static String getTimeForPrayer(String prayer, PrayerTimes prayerTimes) {
+        switch (prayer) {
+            case "Fajr": return prayerTimes.getFajr();
+            case "Dhuhr": return prayerTimes.getDhuhr();
+            case "Asr": return prayerTimes.getAsr();
+            case "Maghrib": return prayerTimes.getMaghrib();
+            case "Isha": return prayerTimes.getIsha();
+            default: return "00:00";
+        }
+    }
+    
+    private static int timeToMinutes(String time) {
+        String[] parts = time.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
     }
     
     private static boolean addAlarm(Context context, String prayerName, String time) {
@@ -55,13 +113,11 @@ public class AlarmAppIntegration {
         }
     }
     
-    private static boolean areAlarmsSet(Context context, String date) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getBoolean(KEY_ALARMS_SET + date, false);
+    private static String getLastSetPrayer(Context context) {
+        return DatabaseHelper.getInstance(context).getSetting("last_set_prayer", "");
     }
     
-    private static void markAlarmsSet(Context context, String date) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putBoolean(KEY_ALARMS_SET + date, true).apply();
+    private static void markPrayerSet(Context context, String prayer) {
+        DatabaseHelper.getInstance(context).saveSetting("last_set_prayer", prayer);
     }
 }

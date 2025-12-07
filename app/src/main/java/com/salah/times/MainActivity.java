@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupPrayerGrid();
         startClockUpdate();
+        setAlarmsFromDatabase();
         loadPrayerTimes();
         
         // Check if first time setup needed
@@ -138,24 +139,32 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 updateClock();
-                handler.postDelayed(this, 1000); // Update every second
+                updateAlarmsIfNeeded();
+                handler.postDelayed(this, 60000); // Update every minute
             }
         };
         handler.post(updateTimeRunnable);
     }
     
+    private void updateAlarmsIfNeeded() {
+        if (currentPrayerTimes != null) {
+            AlarmAppIntegration.addPrayerAlarms(this, currentPrayerTimes);
+        }
+    }
+    
     private void updateClock() {
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat secondsFormat = new SimpleDateFormat("ss", Locale.getDefault());
         
         Date now = new Date();
         clockText.setText(timeFormat.format(now));
         
+        // Update countdown every second
+        handler.postDelayed(() -> updateLiveCountdown(), 1000 - Integer.parseInt(secondsFormat.format(now)));
+        
         // Format date in current language
         String formattedDate = formatDateInCurrentLanguage(now);
         dateText.setText(formattedDate);
-        
-        // Update countdown in real-time
-        updateLiveCountdown();
     }
     
     private String formatDateInCurrentLanguage(Date date) {
@@ -526,6 +535,21 @@ public class MainActivity extends AppCompatActivity {
         });
         
         builder.show();
+    }
+    
+    private void setAlarmsFromDatabase() {
+        try {
+            String cityName = SettingsManager.getDefaultCity();
+            String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
+            
+            PrayerTimes times = DatabaseHelper.getInstance(this).loadPrayerTimes(cityName, today);
+            if (times != null) {
+                AlarmAppIntegration.addPrayerAlarms(this, times);
+                android.util.Log.d("MainActivity", "Set alarms from database for today");
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Failed to set alarms from database", e);
+        }
     }
     
     private void checkAlarmPermissions() {

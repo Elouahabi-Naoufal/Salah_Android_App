@@ -183,28 +183,13 @@ public class PrayerTimesService {
     
     private static void checkAndUpdateAllCitiesInBackground() {
         CompletableFuture.runAsync(() -> {
-            int cityCount = StorageManager.countCityFiles();
-            boolean dateNeedsUpdate = StorageManager.shouldUpdateToday();
-            boolean citiesIncomplete = cityCount < 42;
-            
-            // Always update if cities are incomplete or date is outdated
-            if (citiesIncomplete || dateNeedsUpdate) {
-                Log.d(TAG, "Starting background update of all cities... (Current: " + cityCount + "/42, Date check: " + dateNeedsUpdate + ")");
-                updateAllCitiesDatabase();
-                
-                // Keep updating until we have all 42 cities
-                while (StorageManager.countCityFiles() < 42) {
-                    Log.d(TAG, "Still missing cities, retrying... (" + StorageManager.countCityFiles() + "/42)");
-                    try {
-                        Thread.sleep(5000); // Wait 5 seconds before retry
-                        updateAllCitiesDatabase();
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
-            } else {
-                Log.d(TAG, "All cities up to date (" + cityCount + "/42)");
+            if (!StorageManager.needsUpdate()) {
+                Log.d(TAG, "Cities already updated today, skipping");
+                return;
             }
+            
+            Log.d(TAG, "Starting background update of all cities...");
+            updateAllCitiesDatabase();
         });
     }
     
