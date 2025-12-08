@@ -58,6 +58,12 @@
             android:exported="false"
             android:theme="@style/Theme.SalahTimes"
             android:parentActivityName=".MainActivity" />
+            
+        <activity
+            android:name=".AlarmSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SalahTimes"
+            android:parentActivityName=".SettingsActivity" />
     </application>
 
 </manifest>

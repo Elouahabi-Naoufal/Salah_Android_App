@@ -72,7 +72,13 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsManager.getNotificationsEnabled() ? TranslationManager.tr("settings_items.notifications_enabled") : TranslationManager.tr("settings_items.notifications_disabled"), 
             v -> toggleNotifications());
         
-
+        // Alarms
+        addModernSettingItem(container, "⏰", TranslationManager.tr("alarms.alarms"), 
+            TranslationManager.tr("alarms.configure_days"), 
+            v -> {
+                Intent intent = new Intent(this, AlarmSettingsActivity.class);
+                startActivity(intent);
+            });
     }
     
     private void setupPrayerSection() {
