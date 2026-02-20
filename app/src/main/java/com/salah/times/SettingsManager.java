@@ -58,14 +58,6 @@ public class SettingsManager {
         return Boolean.parseBoolean(DatabaseHelper.getInstance(appContext).getSetting("adan_enabled", "true"));
     }
     
-    public static void setPrayerAlarmEnabled(String prayer, boolean enabled) {
-        DatabaseHelper.getInstance(appContext).setPrayerAlarmEnabled(prayer, enabled);
-    }
-    
-    public static boolean getPrayerAlarmEnabled(String prayer) {
-        return DatabaseHelper.getInstance(appContext).getPrayerAlarmEnabled(prayer, true);
-    }
-    
     public static void setAdhanRingtone(int type) {
         DatabaseHelper.getInstance(appContext).saveSetting("adhan_ringtone", String.valueOf(type));
     }

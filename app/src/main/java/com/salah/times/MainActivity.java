@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupPrayerGrid();
         startClockUpdate();
-        setAlarmsFromDatabase();
         loadPrayerTimes();
         
         // Check if first time setup needed
@@ -139,17 +138,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 updateClock();
-                updateAlarmsIfNeeded();
                 handler.postDelayed(this, 60000); // Update every minute
             }
         };
         handler.post(updateTimeRunnable);
-    }
-    
-    private void updateAlarmsIfNeeded() {
-        if (currentPrayerTimes != null) {
-            AlarmAppIntegration.addPrayerAlarms(this, currentPrayerTimes);
-        }
     }
     
     private void updateClock() {
@@ -236,9 +228,6 @@ public class MainActivity extends AppCompatActivity {
     private void updatePrayerTimesUI(PrayerTimes prayerTimes) {
         // Apply test times if in testing mode
         this.currentPrayerTimes = TestingManager.getTestPrayerTimes(this, prayerTimes);
-        
-        // Add alarms to system alarm app
-        AlarmAppIntegration.addPrayerAlarms(this, prayerTimes);
         
         // Fetch tomorrow's Fajr for countdown calculation
         City defaultCity = CitiesData.getCityByName(SettingsManager.getDefaultCity());
@@ -497,98 +486,16 @@ public class MainActivity extends AppCompatActivity {
     
     private void showTestingDialog() {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        builder.setTitle("Testing Mode - Adhan Test");
+        builder.setTitle("Testing Mode");
         
-        String[] options = {"Test in 5 seconds", "Test in 30 seconds", "Test in 1 minute", "Test in 5 minutes", "Check permissions", "Disable testing mode"};
+        String[] options = {"Disable testing mode"};
         
         builder.setItems(options, (dialog, which) -> {
-            switch (which) {
-                case 0:
-                    TestingManager.setNextPrayerInSeconds(this, 5);
-                    Toast.makeText(this, "Adhan will play in 5 seconds", Toast.LENGTH_SHORT).show();
-                    loadPrayerTimes();
-                    break;
-                case 1:
-                    TestingManager.setNextPrayerInSeconds(this, 30);
-                    Toast.makeText(this, "Adhan will play in 30 seconds", Toast.LENGTH_SHORT).show();
-                    loadPrayerTimes();
-                    break;
-                case 2:
-                    TestingManager.setNextPrayerInMinutes(this, 1);
-                    Toast.makeText(this, "Adhan will play in 1 minute", Toast.LENGTH_SHORT).show();
-                    loadPrayerTimes();
-                    break;
-                case 3:
-                    TestingManager.setNextPrayerInMinutes(this, 5);
-                    Toast.makeText(this, "Adhan will play in 5 minutes", Toast.LENGTH_SHORT).show();
-                    loadPrayerTimes();
-                    break;
-                case 4:
-                    checkAlarmPermissions();
-                    break;
-                case 5:
-                    TestingManager.setTestingMode(this, false);
-                    Toast.makeText(this, "Testing mode disabled", Toast.LENGTH_SHORT).show();
-                    loadPrayerTimes();
-                    break;
-            }
+            TestingManager.setTestingMode(this, false);
+            Toast.makeText(this, "Testing mode disabled", Toast.LENGTH_SHORT).show();
+            loadPrayerTimes();
         });
         
         builder.show();
-    }
-    
-    private void setAlarmsFromDatabase() {
-        try {
-            String cityName = SettingsManager.getDefaultCity();
-            String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
-            
-            PrayerTimes times = DatabaseHelper.getInstance(this).loadPrayerTimes(cityName, today);
-            if (times != null) {
-                AlarmAppIntegration.addPrayerAlarms(this, times);
-                android.util.Log.d("MainActivity", "Set alarms from database for today");
-            }
-        } catch (Exception e) {
-            android.util.Log.e("MainActivity", "Failed to set alarms from database", e);
-        }
-    }
-    
-    private void checkAlarmPermissions() {
-        StringBuilder status = new StringBuilder("Alarm Permissions Status:\n\n");
-        
-        // Check exact alarm permission (Android 12+)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            android.app.AlarmManager alarmManager = (android.app.AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            if (alarmManager != null && alarmManager.canScheduleExactAlarms()) {
-                status.append("✓ Exact alarms: GRANTED\n");
-            } else {
-                status.append("✗ Exact alarms: DENIED\n");
-            }
-        } else {
-            status.append("✓ Exact alarms: Not required (Android < 12)\n");
-        }
-        
-        // Check notification permission
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                status.append("✓ Notifications: GRANTED\n");
-            } else {
-                status.append("✗ Notifications: DENIED\n");
-            }
-        } else {
-            status.append("✓ Notifications: Not required (Android < 13)\n");
-        }
-        
-
-        
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        builder.setTitle("Permission Status")
-               .setMessage(status.toString())
-               .setPositiveButton("OK", null)
-               .setNeutralButton("Open Settings", (d, w) -> {
-                   Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                   intent.setData(android.net.Uri.parse("package:" + getPackageName()));
-                   startActivity(intent);
-               })
-               .show();
     }
 }

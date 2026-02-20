@@ -56,16 +56,6 @@ public class MigrationHelper {
                     }
                 }
             }
-            
-            if (settings.has("prayer_alarms")) {
-                JSONObject alarms = settings.getJSONObject("prayer_alarms");
-                String[] prayers = {"fajr", "dhuhr", "asr", "maghrib", "isha"};
-                for (String prayer : prayers) {
-                    if (alarms.has(prayer)) {
-                        db.setPrayerAlarmEnabled(prayer, alarms.getBoolean(prayer));
-                    }
-                }
-            }
         } catch (Exception e) {
             android.util.Log.e("Migration", "Settings migration failed", e);
         }
