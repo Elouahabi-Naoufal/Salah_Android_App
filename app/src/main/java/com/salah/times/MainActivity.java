@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
         prayerGrid = findViewById(R.id.prayer_grid);
         
         iqamaCountdownLabel.setText(TranslationManager.tr("notifications.iqama_countdown"));
+        iqamaCountdownLabel.setVisibility(android.view.View.GONE);
+        iqamaCountdown.setVisibility(android.view.View.GONE);
         
         // Set current city name and app title
         TextView appTitle = findViewById(R.id.app_title);
@@ -100,12 +102,6 @@ public class MainActivity extends AppCompatActivity {
         // Setup refresh button
         findViewById(R.id.refresh_button).setOnClickListener(v -> {
             refreshApp();
-        });
-        
-        // Long press refresh button for testing mode
-        findViewById(R.id.refresh_button).setOnLongClickListener(v -> {
-            showTestingDialog();
-            return true;
         });
         
         // Setup adhkar button
@@ -234,8 +230,7 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void updatePrayerTimesUI(PrayerTimes prayerTimes) {
-        // Apply test times if in testing mode
-        this.currentPrayerTimes = TestingManager.getTestPrayerTimes(this, prayerTimes);
+        this.currentPrayerTimes = prayerTimes;
         
         // Fetch tomorrow's Fajr for countdown calculation
         City defaultCity = CitiesData.getCityByName(SettingsManager.getDefaultCity());
@@ -460,7 +455,8 @@ public class MainActivity extends AppCompatActivity {
                 
             } catch (java.text.ParseException e) {
                 countdownText.setText("--:--:--");
-                iqamaCountdown.setText("");
+                iqamaCountdownLabel.setVisibility(android.view.View.GONE);
+                iqamaCountdown.setVisibility(android.view.View.GONE);
             }
         }
     }
@@ -468,6 +464,10 @@ public class MainActivity extends AppCompatActivity {
     private void updateIqamaCountdown(String nextPrayer, int remainingMinutes, int seconds) {
         int iqamaDelayMinutes = SettingsManager.getIqamaDelay(nextPrayer);
         
+        android.util.Log.d("IqamaCountdown", "Prayer: " + nextPrayer + ", RemainingMin: " + remainingMinutes + ", IqamaDelay: " + iqamaDelayMinutes);
+        
+        // Show countdown when prayer time has passed (remainingMinutes is negative)
+        // and we're still within the iqama delay period
         if (remainingMinutes <= 0 && Math.abs(remainingMinutes) < iqamaDelayMinutes) {
             int iqamaRemainingMinutes = iqamaDelayMinutes + remainingMinutes;
             int iqamaRemainingSeconds = 60 - seconds;
@@ -479,28 +479,21 @@ public class MainActivity extends AppCompatActivity {
                     iqamaRemainingMinutes--;
                 }
                 
-                iqamaCountdown.setText(String.format("%02d:%02d", iqamaRemainingMinutes, iqamaRemainingSeconds));
+                String countdown = String.format("%02d:%02d", iqamaRemainingMinutes, iqamaRemainingSeconds);
+                android.util.Log.d("IqamaCountdown", "Showing: " + countdown);
+                iqamaCountdown.setText(countdown);
+                iqamaCountdownLabel.setVisibility(android.view.View.VISIBLE);
+                iqamaCountdown.setVisibility(android.view.View.VISIBLE);
                 return;
             }
         }
         
-        iqamaCountdown.setText("00:00");
+        android.util.Log.d("IqamaCountdown", "Hiding - not in iqama period");
+        iqamaCountdownLabel.setVisibility(android.view.View.GONE);
+        iqamaCountdown.setVisibility(android.view.View.GONE);
     }
     
 
     
-    private void showTestingDialog() {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        builder.setTitle("Testing Mode");
-        
-        String[] options = {"Disable testing mode"};
-        
-        builder.setItems(options, (dialog, which) -> {
-            TestingManager.setTestingMode(this, false);
-            Toast.makeText(this, "Testing mode disabled", Toast.LENGTH_SHORT).show();
-            loadPrayerTimes();
-        });
-        
-        builder.show();
-    }
+
 }
