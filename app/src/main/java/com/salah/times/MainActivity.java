@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView prayerGrid;
     private Handler handler = new Handler();
     private Runnable updateTimeRunnable;
+    private Runnable countdownRunnable;
     private PrayerTimes currentPrayerTimes;
     private String tomorrowsFajr = null;
     
@@ -138,23 +139,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 updateClock();
-                handler.postDelayed(this, 60000); // Update every minute
+                handler.postDelayed(this, 60000);
             }
         };
         handler.post(updateTimeRunnable);
+        
+        countdownRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateLiveCountdown();
+                handler.postDelayed(this, 1000);
+            }
+        };
+        handler.post(countdownRunnable);
     }
     
     private void updateClock() {
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        SimpleDateFormat secondsFormat = new SimpleDateFormat("ss", Locale.getDefault());
-        
         Date now = new Date();
         clockText.setText(timeFormat.format(now));
         
-        // Update countdown every second
-        handler.postDelayed(() -> updateLiveCountdown(), 1000 - Integer.parseInt(secondsFormat.format(now)));
-        
-        // Format date in current language
         String formattedDate = formatDateInCurrentLanguage(now);
         dateText.setText(formattedDate);
     }
@@ -248,9 +252,6 @@ public class MainActivity extends AppCompatActivity {
         
         // Update Hijri date
         updateHijriDate();
-        
-        // Initial countdown update
-        updateLiveCountdown();
     }
     
     private void updatePrayerGrid(PrayerTimes prayerTimes) {
@@ -316,8 +317,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (handler != null && updateTimeRunnable != null) {
-            handler.removeCallbacks(updateTimeRunnable);
+        if (handler != null) {
+            if (updateTimeRunnable != null) handler.removeCallbacks(updateTimeRunnable);
+            if (countdownRunnable != null) handler.removeCallbacks(countdownRunnable);
         }
     }
     
