@@ -276,6 +276,23 @@ public class SettingsActivity extends AppCompatActivity {
     private void toggleNotifications() {
         boolean enabled = !SettingsManager.getNotificationsEnabled();
         SettingsManager.setNotificationsEnabled(enabled);
+        
+        // Schedule or cancel alarms based on new setting
+        if (enabled) {
+            // Re-schedule alarms
+            String cityName = SettingsManager.getDefaultCity();
+            String today = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date());
+            PrayerTimes times = DatabaseHelper.getInstance(this).loadPrayerTimes(cityName, today);
+            if (times != null) {
+                PrayerAlarmScheduler.schedulePrayerAlarms(this, times);
+            }
+            Toast.makeText(this, TranslationManager.tr("messages.notifications_enabled"), Toast.LENGTH_SHORT).show();
+        } else {
+            // Cancel all alarms
+            PrayerAlarmScheduler.cancelAllAlarms(this);
+            Toast.makeText(this, TranslationManager.tr("messages.notifications_disabled"), Toast.LENGTH_SHORT).show();
+        }
+        
         recreate();
     }
     

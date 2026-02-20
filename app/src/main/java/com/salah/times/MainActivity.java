@@ -249,6 +249,9 @@ public class MainActivity extends AppCompatActivity {
         // Update prayer grid with highlighting
         updatePrayerGrid(prayerTimes);
         
+        // Schedule prayer alarms
+        PrayerAlarmScheduler.schedulePrayerAlarms(this, prayerTimes);
+        
         // Update Hijri date
         updateHijriDate();
     }
