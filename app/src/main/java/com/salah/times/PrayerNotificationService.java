@@ -8,7 +8,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.widget.RemoteViews;
 import androidx.core.app.NotificationCompat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -18,166 +17,175 @@ import java.util.Locale;
 public class PrayerNotificationService extends Service {
     private static final String CHANNEL_ID = "prayer_persistent";
     private static final int NOTIFICATION_ID = 1000;
-    private Handler handler = new Handler();
+
+    private final Handler handler = new Handler();
     private Runnable updateRunnable;
     private PrayerTimes currentPrayerTimes;
-    
+
     @Override
     public void onCreate() {
         super.onCreate();
-        createNotificationChannel();
-        startForegroundService();
-        startPeriodicUpdates();
+        createChannel();
+        startForeground(NOTIFICATION_ID, buildNotification());
+        scheduleUpdates();
     }
-    
-    private void createNotificationChannel() {
-        NotificationChannel channel = new NotificationChannel(
-            CHANNEL_ID,
-            "Prayer Times",
-            NotificationManager.IMPORTANCE_HIGH
+
+    private void createChannel() {
+        NotificationChannel ch = new NotificationChannel(
+                CHANNEL_ID,
+                "Prayer Times",
+                NotificationManager.IMPORTANCE_LOW   // silent, no heads-up, no sound
         );
-        channel.setDescription("");
-        channel.setShowBadge(false);
-        channel.setSound(null, null);
-        channel.enableVibration(false);
-        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-        
-        NotificationManager manager = getSystemService(NotificationManager.class);
-        manager.createNotificationChannel(channel);
+        ch.setDescription("");
+        ch.setShowBadge(false);
+        ch.setSound(null, null);
+        ch.enableVibration(false);
+        ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        getSystemService(NotificationManager.class).createNotificationChannel(ch);
     }
-    
-    private void startForegroundService() {
-        Notification notification = createPrayerNotification();
-        startForeground(NOTIFICATION_ID, notification);
-    }
-    
-    private void startPeriodicUpdates() {
-        loadCurrentPrayerTimes();
+
+    private void scheduleUpdates() {
         updateRunnable = new Runnable() {
-            @Override
-            public void run() {
-                updateNotification();
-                handler.postDelayed(this, 1000); // Update every second for countdown
+            @Override public void run() {
+                loadPrayerTimes();
+                getSystemService(NotificationManager.class)
+                        .notify(NOTIFICATION_ID, buildNotification());
+                handler.postDelayed(this, 1000);
             }
         };
         handler.post(updateRunnable);
     }
-    
-    private Notification createPrayerNotification() {
-        Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        
-        RemoteViews customView = new RemoteViews(getPackageName(), R.layout.notification_prayer);
-        
-        String nextPrayer = getNextPrayerName();
-        String nextTime = getNextPrayerTime();
-        String countdown = getCountdownToNextPrayer();
-        
-        customView.setTextViewText(R.id.next_prayer_label, TranslationManager.tr("next_prayer"));
-        customView.setTextViewText(R.id.next_prayer_name, nextPrayer);
-        customView.setTextViewText(R.id.next_prayer_time, nextTime);
-        customView.setTextViewText(R.id.countdown, countdown);
-        
-        Notification notification = new Notification.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setCustomContentView(customView)
-            .setContentIntent(pendingIntent)
-            .setOngoing(true)
-            .setShowWhen(false)
-            .setPriority(Notification.PRIORITY_MAX)
-            .build();
-        
-        notification.contentView = customView;
-        notification.visibility = Notification.VISIBILITY_PUBLIC;
-        notification.flags |= Notification.FLAG_NO_CLEAR;
-        
-        return notification;
+
+    private Notification buildNotification() {
+        PendingIntent tap = PendingIntent.getActivity(
+                this, 0,
+                new Intent(this, MainActivity.class),
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        String nextPrayer  = getNextPrayerName();
+        String nextTime    = getNextPrayerTime();
+        String countdown   = getCountdown();
+        String cityName    = getCityName();
+
+        // Title:  "Fajr · 05:23"
+        // Text:   "Casablanca  ·  in 02:14:38"
+        String title = nextPrayer + "  ·  " + nextTime;
+        String text  = TranslationManager.tr("next_prayer") + ": " + nextPrayer + "  ·  " + countdown;
+
+        return new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setContentIntent(tap)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setShowWhen(false)
+                .setSilent(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                // Expanded view shows all 5 prayers as BigTextStyle lines
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(buildExpandedText())
+                        .setSummaryText(cityName))
+                .build();
     }
-    
-    private void updateNotification() {
-        loadCurrentPrayerTimes();
-        Notification notification = createPrayerNotification();
-        NotificationManager manager = getSystemService(NotificationManager.class);
-        manager.notify(NOTIFICATION_ID, notification);
+
+    /** Builds the expanded text: all 5 prayer times on one block. */
+    private String buildExpandedText() {
+        if (currentPrayerTimes == null) return TranslationManager.tr("loading");
+        String current = PrayerHighlightManager.getCurrentPrayer(currentPrayerTimes);
+        StringBuilder sb = new StringBuilder();
+        String[][] prayers = {
+            {"Fajr",    currentPrayerTimes.getFajr()},
+            {"Dohr",    currentPrayerTimes.getDhuhr()},
+            {"Asr",     currentPrayerTimes.getAsr()},
+            {"Maghreb", currentPrayerTimes.getMaghrib()},
+            {"Isha",    currentPrayerTimes.getIsha()}
+        };
+        for (String[] p : prayers) {
+            boolean isCurrent = p[0].equals(current);
+            sb.append(isCurrent ? "▶ " : "    ");
+            sb.append(TranslationManager.tr("prayers." + p[0].toLowerCase()));
+            sb.append("  ");
+            sb.append(p[1]);
+            sb.append("\n");
+        }
+        return sb.toString().trim();
     }
-    
-    private void loadCurrentPrayerTimes() {
+
+    // ── Data helpers ──────────────────────────────────────────────────────────
+
+    private void loadPrayerTimes() {
         try {
-            String cityName = SettingsManager.getDefaultCity();
-            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-            currentPrayerTimes = DatabaseHelper.getInstance(this).loadPrayerTimes(cityName, today);
+            City city = CitiesData.getCityByName(SettingsManager.getDefaultCity());
+            if (city == null) return;
+            String today = new SimpleDateFormat("dd/MM", Locale.getDefault()).format(new Date());
+            currentPrayerTimes = DatabaseHelper.getInstance(this)
+                    .loadPrayerTimes(city.getTableName(), today);
         } catch (Exception e) {
-            android.util.Log.e("PrayerNotification", "Failed to load prayer times", e);
+            android.util.Log.e("PrayerNotif", "load failed", e);
         }
     }
-    
+
     private String getNextPrayerName() {
-        if (currentPrayerTimes == null) return TranslationManager.tr("loading");
-        String nextPrayer = PrayerHighlightManager.getNextPrayer(currentPrayerTimes);
-        return TranslationManager.tr("prayers." + nextPrayer.toLowerCase());
+        if (currentPrayerTimes == null) return "—";
+        String p = PrayerHighlightManager.getNextPrayer(currentPrayerTimes);
+        return TranslationManager.tr("prayers." + p.toLowerCase());
     }
-    
+
     private String getNextPrayerTime() {
         if (currentPrayerTimes == null) return "--:--";
-        String nextPrayer = PrayerHighlightManager.getNextPrayer(currentPrayerTimes);
-        return getTimeForPrayer(nextPrayer);
+        return timeForPrayer(PrayerHighlightManager.getNextPrayer(currentPrayerTimes));
     }
-    
-    private String getTimeForPrayer(String prayer) {
+
+    private String timeForPrayer(String prayer) {
+        if (currentPrayerTimes == null) return "--:--";
         switch (prayer) {
-            case "Fajr": return currentPrayerTimes.getFajr();
-            case "Dhuhr": case "Dohr": return currentPrayerTimes.getDhuhr();
-            case "Asr": return currentPrayerTimes.getAsr();
-            case "Maghrib": case "Maghreb": return currentPrayerTimes.getMaghrib();
-            case "Isha": return currentPrayerTimes.getIsha();
-            default: return "--:--";
+            case "Fajr":    return currentPrayerTimes.getFajr();
+            case "Dohr":    return currentPrayerTimes.getDhuhr();
+            case "Asr":     return currentPrayerTimes.getAsr();
+            case "Maghreb": return currentPrayerTimes.getMaghrib();
+            case "Isha":    return currentPrayerTimes.getIsha();
+            default:        return "--:--";
         }
     }
-    
-    private String getCountdownToNextPrayer() {
+
+    private String getCountdown() {
         if (currentPrayerTimes == null) return "--:--:--";
-        
         try {
             Calendar now = Calendar.getInstance();
-            int currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
-            int currentSeconds = now.get(Calendar.SECOND);
-            
-            String nextPrayer = PrayerHighlightManager.getNextPrayer(currentPrayerTimes);
-            String nextTime = getTimeForPrayer(nextPrayer);
-            
-            String[] parts = nextTime.split(":");
-            int prayerMinutes = Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
-            
-            int remainingMinutes = prayerMinutes - currentMinutes;
-            if (remainingMinutes < 0) remainingMinutes += 24 * 60;
-            
-            int hours = remainingMinutes / 60;
-            int minutes = remainingMinutes % 60;
-            int seconds = 60 - currentSeconds;
-            
-            if (seconds == 60) {
-                seconds = 0;
-            } else if (minutes > 0) {
-                minutes--;
-            }
-            
-            return String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+            int curMin = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+            int curSec = now.get(Calendar.SECOND);
+
+            String next = PrayerHighlightManager.getNextPrayer(currentPrayerTimes);
+            String[] parts = timeForPrayer(next).split(":");
+            int prayerMin = Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+
+            int remMin = prayerMin - curMin;
+            if (remMin < 0) remMin += 24 * 60;
+
+            int h = remMin / 60;
+            int m = remMin % 60;
+            int s = 60 - curSec;
+            if (s == 60) { s = 0; } else if (m > 0) { m--; }
+
+            return String.format(Locale.getDefault(), "%02d:%02d:%02d", h, m, s);
         } catch (Exception e) {
             return "--:--:--";
         }
     }
-    
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+
+    private String getCityName() {
+        City city = CitiesData.getCityByName(SettingsManager.getDefaultCity());
+        if (city == null) return SettingsManager.getDefaultCity();
+        return city.getName(TranslationManager.getCurrentLanguage());
     }
-    
+
+    @Override public IBinder onBind(Intent intent) { return null; }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (handler != null && updateRunnable != null) {
-            handler.removeCallbacks(updateRunnable);
-        }
+        if (updateRunnable != null) handler.removeCallbacks(updateRunnable);
     }
 }
