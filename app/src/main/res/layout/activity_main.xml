@@ -214,7 +214,6 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:text="Refresh Prayer Times"
             android:textSize="14sp"
             android:textColor="@color/primary_green"
@@ -224,6 +223,21 @@
             app:iconGravity="textStart"
             style="@style/Widget.Material3.Button.OutlinedButton"
             app:strokeColor="@color/primary_green"
+            app:cornerRadius="12dp" />
+
+        <!-- Refresh DB Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/refresh_db_button"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="8dp"
+            android:text="🗄️ Refresh DB"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:fontFamily="sans-serif-medium"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            app:strokeColor="@color/text_secondary"
             app:cornerRadius="12dp" />
 
 </LinearLayout>

@@ -62,44 +62,8 @@ public class MigrationHelper {
     }
 
     private static void migratePrayerTimes(DatabaseHelper db, File citiesDir) {
-        try {
-            if (!citiesDir.exists()) return;
-            
-            File[] cityFiles = citiesDir.listFiles((dir, name) -> name.endsWith(".json"));
-            if (cityFiles == null) return;
-            
-            for (File cityFile : cityFiles) {
-                try {
-                    BufferedReader reader = new BufferedReader(new FileReader(cityFile));
-                    StringBuilder content = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        content.append(line);
-                    }
-                    reader.close();
-                    
-                    JSONObject cityData = new JSONObject(content.toString());
-                    String cityName = cityData.getString("city");
-                    JSONObject prayerTimes = cityData.getJSONObject("prayer_times");
-                    String date = prayerTimes.optString("date", "");
-                    
-                    db.savePrayerTimes(
-                        cityName,
-                        date,
-                        prayerTimes.getString("fajr"),
-                        prayerTimes.getString("sunrise"),
-                        prayerTimes.getString("dhuhr"),
-                        prayerTimes.getString("asr"),
-                        prayerTimes.getString("maghrib"),
-                        prayerTimes.getString("isha")
-                    );
-                } catch (Exception e) {
-                    android.util.Log.e("Migration", "Failed to migrate city: " + cityFile.getName(), e);
-                }
-            }
-        } catch (Exception e) {
-            android.util.Log.e("Migration", "Prayer times migration failed", e);
-        }
+        // Old JSON city files are incompatible with the new per-city table schema.
+        // Prayer times will be re-fetched from yabiladi on first launch.
     }
 
     private static boolean isMigrated(Context context) {

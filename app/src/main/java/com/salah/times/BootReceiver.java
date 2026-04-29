@@ -12,8 +12,9 @@ public class BootReceiver extends BroadcastReceiver {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             DatabaseHelper db = DatabaseHelper.getInstance(context);
             String cityName = db.getSetting("default_city", "Casablanca");
-            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new java.util.Date());
-            PrayerTimes times = db.loadPrayerTimes(cityName, today);
+            City city = CitiesData.getCityByName(cityName);
+            String todayDdMm = new SimpleDateFormat("dd/MM", Locale.getDefault()).format(new java.util.Date());
+            PrayerTimes times = (city != null) ? db.loadPrayerTimes(city.getTableName(), todayDdMm) : null;
             if (times != null) {
                 PrayerAlarmScheduler.schedulePrayerAlarms(context, times);
             }

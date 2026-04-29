@@ -50,6 +50,12 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <service
+            android:name=".ScrapeAllCitiesService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
             
         <activity
             android:name=".AdhkarActivity"

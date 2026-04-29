@@ -1,7 +1,9 @@
 package com.salah.times;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -34,6 +36,23 @@ public class MainActivity extends AppCompatActivity {
     private Runnable countdownRunnable;
     private PrayerTimes currentPrayerTimes;
     private String tomorrowsFajr = null;
+    private DbRefreshManager dbRefreshManager;
+    private Button refreshDbButton;
+
+    private final BroadcastReceiver scrapeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int success = intent.getIntExtra(ScrapeAllCitiesService.EXTRA_SUCCESS, 0);
+            int failed  = intent.getIntExtra(ScrapeAllCitiesService.EXTRA_FAILED, 0);
+            refreshDbButton.setEnabled(true);
+            refreshDbButton.setText(TranslationManager.tr("refresh_db"));
+            dbRefreshManager.resetCounter();
+            loadPrayerTimes();
+            Toast.makeText(MainActivity.this,
+                    success + " cities updated" + (failed > 0 ? ", " + failed + " failed" : ""),
+                    Toast.LENGTH_LONG).show();
+        }
+    };
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         // Handle single instance
         SingleInstanceManager.handleSingleInstance(this);
         
+        dbRefreshManager = new DbRefreshManager(this);
         initViews();
         setupPrayerGrid();
         startClockUpdate();
@@ -101,7 +121,30 @@ public class MainActivity extends AppCompatActivity {
         
         // Setup refresh button
         findViewById(R.id.refresh_button).setOnClickListener(v -> {
-            refreshApp();
+            if (!dbRefreshManager.isOnline()) {
+                dbRefreshManager.showNoInternetDialog(this);
+            } else {
+                refreshApp();
+            }
+        });
+
+        // Setup Refresh DB button
+        refreshDbButton = findViewById(R.id.refresh_db_button);
+        refreshDbButton.setText(TranslationManager.tr("refresh_db"));
+        refreshDbButton.setOnClickListener(v -> {
+            if (!dbRefreshManager.isOnline()) {
+                dbRefreshManager.showNoInternetDialog(this);
+                return;
+            }
+            refreshDbButton.setEnabled(false);
+            refreshDbButton.setText(TranslationManager.tr("refresh_db_updating"));
+            startForegroundService(new Intent(this, ScrapeAllCitiesService.class));
+        });
+        
+        // Setup refresh button LONG PRESS for testing mode
+        findViewById(R.id.refresh_button).setOnLongClickListener(v -> {
+            showTestMenu();
+            return true;
         });
         
         // Setup adhkar button
@@ -300,6 +343,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        registerReceiver(scrapeReceiver,
+                new IntentFilter(ScrapeAllCitiesService.ACTION_DONE),
+                Context.RECEIVER_NOT_EXPORTED);
         // Update all text when returning from settings (language may have changed)
         TextView appTitle = findViewById(R.id.app_title);
         appTitle.setText(TranslationManager.tr("app_name"));
@@ -316,8 +362,26 @@ public class MainActivity extends AppCompatActivity {
         
         // Reload prayer times for new city
         loadPrayerTimes();
+
+        // 30-day counter check
+        dbRefreshManager.checkOnOpen();
+        if (dbRefreshManager.shouldPromptRefresh()) {
+            dbRefreshManager.showRefreshPrompt(this, () -> {
+                Toast.makeText(this, TranslationManager.tr("refresh_db_updating"), Toast.LENGTH_SHORT).show();
+                PrayerTimesService.forceUpdateAllCities().thenRun(() -> {
+                    dbRefreshManager.resetCounter();
+                    runOnUiThread(() -> loadPrayerTimes());
+                });
+            });
+        }
     }
     
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try { unregisterReceiver(scrapeReceiver); } catch (Exception ignored) {}
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -336,15 +400,86 @@ public class MainActivity extends AppCompatActivity {
         if (hijriText != null) {
             hijriText.setText(TranslationManager.tr("loading"));
         }
-        
-        // Clear current data
+
         currentPrayerTimes = null;
         tomorrowsFajr = null;
+
+        // Reset 30-day counter on manual refresh
+        dbRefreshManager.resetCounter();
+
+        loadPrayerTimes();
+
+        Toast.makeText(this, TranslationManager.tr("messages.refreshing"), Toast.LENGTH_SHORT).show();
+    }
+    
+    private void showTestMenu() {
+        String[] options = {
+            "🧪 Test Mode: 15-sec intervals",
+            "⏰ Test Iqama Countdown",
+            "🔔 Test Fajr Notification NOW",
+            "🔔 Test Dhuhr Notification NOW",
+            "🔄 Exit Test Mode (Real Times)"
+        };
         
-        // Reload everything
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("🧪 TESTING MODE")
+            .setItems(options, (dialog, which) -> {
+                switch(which) {
+                    case 0:
+                        activateTestMode();
+                        break;
+                    case 1:
+                        activateIqamaTestMode();
+                        break;
+                    case 2:
+                        TestingManager.triggerTestNotification(this, "fajr");
+                        Toast.makeText(this, "Fajr notification triggered!", Toast.LENGTH_SHORT).show();
+                        break;
+                    case 3:
+                        TestingManager.triggerTestNotification(this, "dhuhr");
+                        Toast.makeText(this, "Dhuhr notification triggered!", Toast.LENGTH_SHORT).show();
+                        break;
+                    case 4:
+                        exitTestMode();
+                        break;
+                }
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+    
+    private void activateTestMode() {
+        PrayerTimes testTimes = TestingManager.getTestPrayerTimes();
+        TestingManager.activateTestMode(this, testTimes);
+        updatePrayerTimesUI(testTimes);
+        
+        Toast.makeText(this, "🧪 TEST MODE ACTIVE\nFajr in 15s, Dhuhr in 30s, Asr in 45s\nNotifications will trigger!", Toast.LENGTH_LONG).show();
+    }
+    
+    private void activateIqamaTestMode() {
+        PrayerTimes testTimes = TestingManager.getIqamaTestTimes();
+        TestingManager.activateTestMode(this, testTimes);
+        updatePrayerTimesUI(testTimes);
+        
+        Toast.makeText(this, "⏰ IQAMA TEST MODE\nDhuhr was 2 min ago\nIqama countdown should appear!", Toast.LENGTH_LONG).show();
+    }
+    
+    private void exitTestMode() {
+        // Clear test times from database
+        String cityName = SettingsManager.getDefaultCity();
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        DatabaseHelper db = DatabaseHelper.getInstance(this);
+        
+        // Delete test prayer times from database
+        db.getWritableDatabase().delete("prayer_times", "city_name = ? AND date = ?", new String[]{cityName, today});
+        
+        // Cancel any test alarms
+        PrayerAlarmScheduler.cancelAllAlarms(this);
+        
+        // Force reload from internet (not cache)
         loadPrayerTimes();
         
-        Toast.makeText(this, TranslationManager.tr("messages.refreshing"), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "✅ Exited test mode - Loading real prayer times...", Toast.LENGTH_SHORT).show();
     }
     
     private void showFeatureUnavailable(String featureName) {
