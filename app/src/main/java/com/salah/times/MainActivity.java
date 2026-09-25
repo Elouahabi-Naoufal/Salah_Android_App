@@ -588,8 +588,8 @@ public class MainActivity extends AppCompatActivity {
                 String countdown = String.format("%02d:%02d:%02d", hours, minutes, seconds);
                 countdownText.setText(countdown);
                 
-                // Update iqama countdown
-                updateIqamaCountdown(nextPrayer, remainingMinutes, seconds);
+                // Iqama timer for the prayer currently in its post-adhan window
+                updateIqamaCountdown();
                 
             } catch (java.text.ParseException e) {
                 countdownText.setText("--:--:--");
@@ -599,36 +599,81 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
-    private void updateIqamaCountdown(String nextPrayer, int remainingMinutes, int seconds) {
-        int iqamaDelayMinutes = SettingsManager.getIqamaDelay(nextPrayer);
-        
-        android.util.Log.d("IqamaCountdown", "Prayer: " + nextPrayer + ", RemainingMin: " + remainingMinutes + ", IqamaDelay: " + iqamaDelayMinutes);
-        
-        // Show countdown when prayer time has passed (remainingMinutes is negative)
-        // and we're still within the iqama delay period
-        if (remainingMinutes <= 0 && Math.abs(remainingMinutes) < iqamaDelayMinutes) {
-            int iqamaRemainingMinutes = iqamaDelayMinutes + remainingMinutes;
-            int iqamaRemainingSeconds = 60 - seconds;
-            
-            if (iqamaRemainingMinutes > 0 || (iqamaRemainingMinutes == 0 && iqamaRemainingSeconds > 0)) {
-                if (iqamaRemainingSeconds == 60) {
-                    iqamaRemainingSeconds = 0;
-                } else if (iqamaRemainingMinutes > 0) {
-                    iqamaRemainingMinutes--;
+    /**
+     * Iqama countdown for the card: finds the most recently passed prayer
+     * today and, while now is still before (prayer time + its configured
+     * iqama delay), shows the remaining time. Reappears for every prayer
+     * in its own window, then hides until the next one.
+     */
+    private void updateIqamaCountdown() {
+        if (currentPrayerTimes == null) {
+            hideIqamaCountdown();
+            return;
+        }
+        try {
+            java.util.Calendar now = java.util.Calendar.getInstance();
+            int nowMinutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60
+                    + now.get(java.util.Calendar.MINUTE);
+            int nowSeconds = nowMinutes * 60 + now.get(java.util.Calendar.SECOND);
+
+            String[] order = {"Fajr", "Dohr", "Asr", "Maghreb", "Isha"};
+            String lastPrayer = null;
+            int lastMinutes = -1;
+            for (String prayer : order) {
+                int minutes = parsePrayerMinutes(getTimeForPrayer(prayer, currentPrayerTimes));
+                if (minutes >= 0 && minutes <= nowMinutes && minutes > lastMinutes) {
+                    lastPrayer = prayer;
+                    lastMinutes = minutes;
                 }
-                
-                String countdown = String.format("%02d:%02d", iqamaRemainingMinutes, iqamaRemainingSeconds);
-                android.util.Log.d("IqamaCountdown", "Showing: " + countdown);
-                iqamaCountdown.setText(countdown);
-                iqamaCountdownLabel.setVisibility(android.view.View.VISIBLE);
-                iqamaCountdown.setVisibility(android.view.View.VISIBLE);
+            }
+            if (lastPrayer == null) {
+                hideIqamaCountdown();
                 return;
             }
+
+            int delayMinutes = SettingsManager.getIqamaDelay(lastPrayer);
+            int remaining = (lastMinutes + delayMinutes) * 60 - nowSeconds;
+            if (remaining <= 0) {
+                hideIqamaCountdown();
+                return;
+            }
+
+            int hours = remaining / 3600;
+            int minutes = (remaining % 3600) / 60;
+            int seconds = remaining % 60;
+            String countdown = hours > 0
+                    ? String.format("%d:%02d:%02d", hours, minutes, seconds)
+                    : String.format("%02d:%02d", minutes, seconds);
+
+            String prayerName = TranslationManager.tr("prayers." + lastPrayer.toLowerCase());
+            iqamaCountdownLabel.setText(
+                    TranslationManager.tr("notifications.iqama_countdown") + " • " + prayerName);
+            iqamaCountdown.setText(countdown);
+            iqamaCountdownLabel.setVisibility(android.view.View.VISIBLE);
+            iqamaCountdown.setVisibility(android.view.View.VISIBLE);
+        } catch (Exception e) {
+            hideIqamaCountdown();
         }
-        
-        android.util.Log.d("IqamaCountdown", "Hiding - not in iqama period");
+    }
+
+    private void hideIqamaCountdown() {
         iqamaCountdownLabel.setVisibility(android.view.View.GONE);
         iqamaCountdown.setVisibility(android.view.View.GONE);
+    }
+
+    /** "HH:mm" -> minutes after midnight, or -1 when unparseable. */
+    private int parsePrayerMinutes(String time) {
+        try {
+            java.text.SimpleDateFormat format =
+                    new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+            java.util.Date date = format.parse(time);
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(date);
+            return cal.get(java.util.Calendar.HOUR_OF_DAY) * 60
+                    + cal.get(java.util.Calendar.MINUTE);
+        } catch (Exception e) {
+            return -1;
+        }
     }
     
 

@@ -16,63 +16,57 @@ import java.util.Map;
 public class IqamaManager {
     private static final String IQAMA_CONFIG_FILE = "iqama_times.json";
     private Context context;
-    private Map<String, Integer> iqamaTimes;
     private Gson gson = new Gson();
     
     public IqamaManager(Context context) {
         this.context = context;
-        loadIqamaTimes();
+        migrateLegacyFileOnce();
     }
-    
-    private void loadIqamaTimes() {
+
+    /**
+     * One-time migration: the pre-2026 file store (iqama_times.json with
+     * Fajr/Dhuhr/Asr/Maghrib/Isha keys) moves into the DB so Settings and
+     * the countdown card share one source of truth. File is removed after.
+     */
+    private void migrateLegacyFileOnce() {
         try {
             File file = new File(context.getFilesDir(), IQAMA_CONFIG_FILE);
-            if (file.exists()) {
-                FileInputStream fis = new FileInputStream(file);
-                InputStreamReader reader = new InputStreamReader(fis);
-                Type type = new TypeToken<Map<String, Integer>>(){}.getType();
-                iqamaTimes = gson.fromJson(reader, type);
-                reader.close();
+            if (!file.exists()) return;
+            FileInputStream fis = new FileInputStream(file);
+            InputStreamReader reader = new InputStreamReader(fis);
+            Type type = new TypeToken<Map<String, Integer>>(){}.getType();
+            Map<String, Integer> legacy = gson.fromJson(reader, type);
+            reader.close();
+            if (legacy != null) {
+                for (Map.Entry<String, Integer> e : legacy.entrySet()) {
+                    if (e.getValue() != null) SettingsManager.setIqamaDelay(e.getKey(), e.getValue());
+                }
             }
+            file.delete();
         } catch (Exception e) {
-            // Use defaults if loading fails
+            // Best effort: DB defaults apply
         }
-        
-        if (iqamaTimes == null) {
-            setDefaultIqamaTimes();
-        }
-    }
-    
-    private void setDefaultIqamaTimes() {
-        iqamaTimes = new HashMap<>();
-        iqamaTimes.put("Fajr", 20);
-        iqamaTimes.put("Dohr", 15);
-        iqamaTimes.put("Dhuhr", 15); // Support both spellings
-        iqamaTimes.put("Asr", 15);
-        iqamaTimes.put("Maghreb", 10);
-        iqamaTimes.put("Maghrib", 10); // Support both spellings
-        iqamaTimes.put("Isha", 15);
     }
     
     public void saveIqamaTimes() {
+        // No-op: values are persisted to the DB on every setIqamaDelay call.
+    }
+    
+    /** Single source of truth: the DB (shared with the countdown card). */
+    public int getIqamaDelay(String prayer) {
         try {
-            File file = new File(context.getFilesDir(), IQAMA_CONFIG_FILE);
-            FileOutputStream fos = new FileOutputStream(file);
-            OutputStreamWriter writer = new OutputStreamWriter(fos);
-            gson.toJson(iqamaTimes, writer);
-            writer.close();
+            return SettingsManager.getIqamaDelay(prayer);
         } catch (Exception e) {
-            // Handle save error
+            return 15;
         }
     }
     
-    public int getIqamaDelay(String prayer) {
-        return iqamaTimes.getOrDefault(prayer, 15);
-    }
-    
     public void setIqamaDelay(String prayer, int minutes) {
-        iqamaTimes.put(prayer, minutes);
-        saveIqamaTimes();
+        try {
+            SettingsManager.setIqamaDelay(prayer, minutes);
+        } catch (Exception e) {
+            // Persist on next successful write
+        }
     }
     
     public String getIqamaCountdown(String prayer, String prayerTime) {

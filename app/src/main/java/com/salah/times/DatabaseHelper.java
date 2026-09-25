@@ -121,10 +121,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ── Iqama delays ──────────────────────────────────────────────────────────
 
+    /**
+     * Canonical iqama keys: fajr, dhuhr, asr, maghrib, isha.
+     * Yabiladi spellings (Dohr, Maghreb) map onto these so every
+     * caller shares one source of truth regardless of spelling.
+     */
+    public static String iqamaKey(String prayer) {
+        String k = prayer == null ? "" : prayer.toLowerCase(java.util.Locale.ROOT);
+        if (k.equals("dohr")) return "dhuhr";
+        if (k.equals("maghreb")) return "maghrib";
+        return k;
+    }
+
     public void setIqamaDelay(String prayer, int minutes) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues v = new ContentValues();
-        v.put("prayer", prayer.toLowerCase());
+        v.put("prayer", iqamaKey(prayer));
         v.put("delay_minutes", minutes);
         db.insertWithOnConflict("iqama_delays", null, v, SQLiteDatabase.CONFLICT_REPLACE);
     }
@@ -132,7 +144,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public int getIqamaDelay(String prayer, int defaultValue) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.query("iqama_delays", new String[]{"delay_minutes"},
-                "prayer=?", new String[]{prayer.toLowerCase()}, null, null, null);
+                "prayer=?", new String[]{iqamaKey(prayer)}, null, null, null);
         if (c != null && c.moveToFirst()) {
             int d = c.getInt(0); c.close(); return d;
         }
