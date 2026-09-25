@@ -11,14 +11,17 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CitySelectionActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
-    private CityAdapter adapter;
+    private GroupedCityAdapter adapter;
     private EditText searchEditText;
-    private List<City> allCities;
-    private List<City> filteredCities;
+    /** Mixed list: String (country header) or City (row), countries sorted A-Z. */
+    private final List<Object> displayItems = new ArrayList<>();
     private TextView welcomeTitle, welcomeSubtitle;
     
     @Override
@@ -32,7 +35,7 @@ public class CitySelectionActivity extends AppCompatActivity {
         initViews();
         setupRecyclerView();
         setupSearch();
-        loadCities();
+        rebuildItems("");
     }
     
     private void initViews() {
@@ -52,8 +55,7 @@ public class CitySelectionActivity extends AppCompatActivity {
         GridLayoutManager layoutManager = new GridLayoutManager(this, 1);
         recyclerView.setLayoutManager(layoutManager);
         
-        filteredCities = new ArrayList<>();
-        adapter = new CityAdapter(filteredCities, this::onCitySelected);
+        adapter = new GroupedCityAdapter(displayItems, this::onCitySelected);
         recyclerView.setAdapter(adapter);
     }
     
@@ -64,33 +66,50 @@ public class CitySelectionActivity extends AppCompatActivity {
             
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterCities(s.toString());
+                rebuildItems(s.toString());
             }
             
             @Override
             public void afterTextChanged(Editable s) {}
         });
     }
-    
-    private void loadCities() {
-        allCities = CitiesData.getAllCities();
-        filteredCities.clear();
-        filteredCities.addAll(allCities);
-        adapter.notifyDataSetChanged();
-    }
-    
-    private void filterCities(String query) {
-        filteredCities.clear();
-        
-        if (query.isEmpty()) {
-            filteredCities.addAll(allCities);
+
+    /**
+     * Rebuild grouped display items: countries strictly A-Z
+     * (Maroc in alphabetical position, no priority), cities A-Z
+     * within each country. Search filters across city names + country.
+     */
+    private void rebuildItems(String query) {
+        displayItems.clear();
+        String currentLang = TranslationManager.getCurrentLanguage();
+
+        List<City> source;
+        if (query == null || query.isEmpty()) {
+            source = CitiesData.getAllCities();
         } else {
-            String currentLang = TranslationManager.getCurrentLanguage();
-            List<City> searchResults = CitiesData.searchCities(query, currentLang);
-            filteredCities.addAll(searchResults);
+            source = CitiesData.searchCities(query, currentLang);
         }
-        
-        adapter.notifyDataSetChanged();
+
+        Map<String, List<City>> byCountry = new LinkedHashMap<>();
+        for (City c : source) {
+            if (!byCountry.containsKey(c.getCountry())) {
+                byCountry.put(c.getCountry(), new ArrayList<>());
+            }
+            byCountry.get(c.getCountry()).add(c);
+        }
+
+        List<String> countries = new ArrayList<>(byCountry.keySet());
+        Collections.sort(countries);
+
+        for (String country : countries) {
+            List<City> list = byCountry.get(country);
+            Collections.sort(list, (a, b) ->
+                    a.getName(currentLang).compareToIgnoreCase(b.getName(currentLang)));
+            displayItems.add(country);
+            displayItems.addAll(list);
+        }
+
+        if (adapter != null) adapter.notifyDataSetChanged();
     }
     
     private void onCitySelected(City city) {
@@ -111,8 +130,11 @@ public class CitySelectionActivity extends AppCompatActivity {
         return true;
     }
     
-    public static class CityAdapter extends RecyclerView.Adapter<CityAdapter.CityViewHolder> {
-        private List<City> cities;
+    public static class GroupedCityAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private static final int VIEW_HEADER = 0;
+        private static final int VIEW_CITY = 1;
+
+        private final List<Object> items;
         private OnCitySelectedListener listener;
         private String selectedCityName;
         
@@ -120,42 +142,77 @@ public class CitySelectionActivity extends AppCompatActivity {
             void onCitySelected(City city);
         }
         
-        public CityAdapter(List<City> cities, OnCitySelectedListener listener) {
-            this.cities = cities;
+        public GroupedCityAdapter(List<Object> items, OnCitySelectedListener listener) {
+            this.items = items;
             this.listener = listener;
             this.selectedCityName = SettingsManager.getDefaultCity();
         }
+
+        @Override
+        public int getItemViewType(int position) {
+            return items.get(position) instanceof City ? VIEW_CITY : VIEW_HEADER;
+        }
         
         @Override
-        public CityViewHolder onCreateViewHolder(android.view.ViewGroup parent, int viewType) {
+        public RecyclerView.ViewHolder onCreateViewHolder(android.view.ViewGroup parent, int viewType) {
+            if (viewType == VIEW_HEADER) {
+                View view = android.view.LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_country_header, parent, false);
+                return new HeaderViewHolder(view);
+            }
             View view = android.view.LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_city_ultra_modern, parent, false);
             return new CityViewHolder(view);
         }
         
         @Override
-        public void onBindViewHolder(CityViewHolder holder, int position) {
-            City city = cities.get(position);
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            if (holder instanceof HeaderViewHolder) {
+                String country = (String) items.get(position);
+                int count = countCitiesAfter(position);
+                ((HeaderViewHolder) holder).countryName.setText(country + " (" + count + ")");
+                return;
+            }
+            City city = (City) items.get(position);
+            CityViewHolder cityHolder = (CityViewHolder) holder;
             String currentLang = TranslationManager.getCurrentLanguage();
             
-            holder.cityName.setText(city.getName(currentLang));
-            holder.cityRegion.setVisibility(View.VISIBLE);
-            holder.cityRegion.setText(city.getCountry());
+            cityHolder.cityName.setText(city.getName(currentLang));
+            cityHolder.cityRegion.setVisibility(View.GONE);
             
             boolean isSelected = CitiesData.getCityByName(selectedCityName).getNameEn()
                     .equals(city.getNameEn());
-            holder.selectionIndicator.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+            cityHolder.selectionIndicator.setVisibility(isSelected ? View.VISIBLE : View.GONE);
             
-            holder.itemView.setOnClickListener(v -> {
+            cityHolder.itemView.setOnClickListener(v -> {
                 selectedCityName = city.getNameEn();
                 notifyDataSetChanged();
                 listener.onCitySelected(city);
             });
         }
+
+        /** Count consecutive City items following a header at position. */
+        private int countCitiesAfter(int headerPosition) {
+            int count = 0;
+            for (int i = headerPosition + 1; i < items.size(); i++) {
+                if (!(items.get(i) instanceof City)) break;
+                count++;
+            }
+            return count;
+        }
         
         @Override
         public int getItemCount() {
-            return cities.size();
+            return items.size();
+        }
+
+        static class HeaderViewHolder extends RecyclerView.ViewHolder {
+            TextView countryName;
+
+            HeaderViewHolder(View itemView) {
+                super(itemView);
+                countryName = itemView.findViewById(R.id.countryName);
+            }
         }
         
         static class CityViewHolder extends RecyclerView.ViewHolder {
