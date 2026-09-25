@@ -121,4 +121,41 @@ public class TranslationManager {
             default: return code;
         }
     }
+
+    // ── Countries (French canonical names from yabiladi) ────────────────────
+
+    /** Translated country name in the current language. Falls back to French. */
+    public static String trCountry(String frCountry) {
+        if (frCountry == null) return "";
+        JSONObject langObj = translations.get(currentLanguage);
+        String v = langObj == null ? null : getNestedValue(langObj, "countries." + frCountry);
+        if (v != null) return v;
+        JSONObject enObj = translations.get("en");
+        v = enObj == null ? null : getNestedValue(enObj, "countries." + frCountry);
+        return v != null ? v : frCountry;
+    }
+
+    /**
+     * True if the (already normalized) query matches the country name in ANY
+     * app language, so typing in a non-default language still finds results.
+     */
+    public static boolean countryMatches(String frCountry, String normalizedQuery) {
+        if (normalizedQuery == null || normalizedQuery.isEmpty()) return true;
+        if (normalize(frCountry).contains(normalizedQuery)) return true;
+        for (String lang : getAvailableLanguages()) {
+            JSONObject o = translations.get(lang);
+            if (o == null) continue;
+            String v = getNestedValue(o, "countries." + frCountry);
+            if (v != null && normalize(v).contains(normalizedQuery)) return true;
+        }
+        return false;
+    }
+
+    /** Lowercase + strip accents for tolerant cross-language matching. */
+    public static String normalize(String s) {
+        if (s == null) return "";
+        String n = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
+        n = n.replaceAll("\\p{M}", "");
+        return n.toLowerCase(java.util.Locale.ROOT);
+    }
 }

@@ -103,6 +103,8 @@ Thumbs.db
 
 # Config files
 *.json
+# App translations must be versioned (loaded from assets at runtime)
+!app/src/main/assets/config/languages/*.json
 *.conf
 *.config
 *.ini

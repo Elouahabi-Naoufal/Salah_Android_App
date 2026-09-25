@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SettingsAdapter extends FragmentStateAdapter {
@@ -85,48 +87,77 @@ public class SettingsAdapter extends FragmentStateAdapter {
             
             layout.addView(themeSpinner);
             
-            // City Selection
+            // Default city: country first, then city inside that country
             TextView cityLabel = new TextView(getContext());
             cityLabel.setText(TranslationManager.tr("settings_items.default_city"));
             cityLabel.setTextSize(16);
             cityLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(cityLabel);
             
-            Spinner citySpinner = new Spinner(getContext());
-            List<City> cities = CitiesData.getAllCities();
-            String[] cityNames = new String[cities.size()];
             String currentLang = TranslationManager.getCurrentLanguage();
-            
-            for (int i = 0; i < cities.size(); i++) {
-                City c = cities.get(i);
-                cityNames[i] = c.getName(currentLang) + " (" + c.getCountry() + ")";
+            List<String> allCountries = CitiesData.getCountries();
+            Collections.sort(allCountries, (a, b) ->
+                    TranslationManager.trCountry(a).compareToIgnoreCase(TranslationManager.trCountry(b)));
+            String[] countryNames = new String[allCountries.size()];
+            for (int i = 0; i < allCountries.size(); i++) {
+                countryNames[i] = TranslationManager.trCountry(allCountries.get(i));
             }
-            ArrayAdapter<String> cityAdapter = new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_spinner_item, cityNames);
-            cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            citySpinner.setAdapter(cityAdapter);
             
-            String currentCity = SettingsManager.getDefaultCity();
-            City current = CitiesData.getCityByName(currentCity);
-            for (int i = 0; i < cities.size(); i++) {
-                if (cities.get(i).getNameEn().equals(current.getNameEn())) {
-                    citySpinner.setSelection(i);
-                    break;
+            Spinner countrySpinner = new Spinner(getContext());
+            ArrayAdapter<String> countryAdapter = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_spinner_item, countryNames);
+            countryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            countrySpinner.setAdapter(countryAdapter);
+            layout.addView(countrySpinner);
+            
+            Spinner citySpinner = new Spinner(getContext());
+            layout.addView(citySpinner);
+            
+            final List<City>[] shownCities = new List[]{new ArrayList<>()};
+            final boolean[] ready = {false};
+            final boolean[] suppressCity = {false};
+            
+            City saved0 = CitiesData.getCityByName(SettingsManager.getDefaultCity());
+            int countryPos0 = Math.max(0, allCountries.indexOf(saved0.getCountry()));
+            int cityPos0 = fillCitySpinner(citySpinner, currentLang,
+                    allCountries.get(countryPos0), shownCities, saved0.getNameEn());
+            countrySpinner.setSelection(countryPos0);
+            citySpinner.setSelection(cityPos0);
+            ready[0] = true;
+            
+            countrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (!ready[0]) return;
+                    String fr = allCountries.get(position);
+                    City saved = CitiesData.getCityByName(SettingsManager.getDefaultCity());
+                    String selectEn = saved.getCountry().equals(fr) ? saved.getNameEn() : null;
+                    suppressCity[0] = true;
+                    int pos = fillCitySpinner(citySpinner, currentLang, fr, shownCities, selectEn);
+                    citySpinner.setSelection(pos);
+                    suppressCity[0] = false;
+                    if (pos >= 0 && pos < shownCities[0].size()) {
+                        City selected = shownCities[0].get(pos);
+                        SettingsManager.setDefaultCity(selected.getNameEn());
+                        Toast.makeText(getContext(), TranslationManager.tr("messages.city_changed"), Toast.LENGTH_LONG).show();
+                    }
                 }
-            }
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {}
+            });
             
             citySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    City selectedCity = cities.get(position);
+                    if (!ready[0] || suppressCity[0]) return;
+                    if (position < 0 || position >= shownCities[0].size()) return;
+                    City selectedCity = shownCities[0].get(position);
                     SettingsManager.setDefaultCity(selectedCity.getNameEn());
                     Toast.makeText(getContext(), TranslationManager.tr("messages.city_changed"), Toast.LENGTH_LONG).show();
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {}
             });
-            
-            layout.addView(citySpinner);
             
             // Auto Update Toggle
             CheckBox autoUpdateCheck = new CheckBox(getContext());
@@ -166,6 +197,27 @@ public class SettingsAdapter extends FragmentStateAdapter {
             layout.addView(restartButton);
             
             return layout;
+        }
+
+        /** Fill the city spinner with a country's cities (A-Z); returns position to select. */
+        private int fillCitySpinner(Spinner spinner, String lang, String frCountry,
+                                    List<City>[] out, String selectEn) {
+            List<City> list = CitiesData.getCitiesByCountry(frCountry);
+            Collections.sort(list, (a, b) ->
+                    a.getName(lang).compareToIgnoreCase(b.getName(lang)));
+            out[0] = list;
+            String[] names = new String[list.size()];
+            for (int i = 0; i < list.size(); i++) names[i] = list.get(i).getName(lang);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_spinner_item, names);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+            if (selectEn != null) {
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).getNameEn().equals(selectEn)) return i;
+                }
+            }
+            return 0;
         }
 
     }

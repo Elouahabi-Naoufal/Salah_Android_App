@@ -1,6 +1,5 @@
 package com.salah.times;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,13 +15,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Two-step default-city picker: choose a country first, then a city inside it.
+ * Search matches countries AND cities in ANY app language (not just default).
+ */
 public class CitySelectionActivity extends AppCompatActivity {
+    private static final int MODE_COUNTRIES = 0;
+    private static final int MODE_CITIES = 1;
+
     private RecyclerView recyclerView;
-    private GroupedCityAdapter adapter;
+    private PickerAdapter adapter;
     private EditText searchEditText;
-    /** Mixed list: String (country header) or City (row), countries sorted A-Z. */
     private final List<Object> displayItems = new ArrayList<>();
     private TextView welcomeTitle, welcomeSubtitle;
+
+    private int mode = MODE_COUNTRIES;
+    /** French canonical country name selected in step 1. */
+    private String selectedCountryFr;
+    private String query = "";
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +45,7 @@ public class CitySelectionActivity extends AppCompatActivity {
         initViews();
         setupRecyclerView();
         setupSearch();
-        rebuildItems("");
+        rebuildItems();
     }
     
     private void initViews() {
@@ -47,15 +57,14 @@ public class CitySelectionActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.citiesRecyclerView);
         
         welcomeTitle.setText(TranslationManager.tr("city_selection.welcome"));
-        welcomeSubtitle.setText(TranslationManager.tr("city_selection.select_city"));
-        searchEditText.setHint(TranslationManager.tr("city_selection.search_city"));
+        searchEditText.setHint(TranslationManager.tr("city_selection.search_country_city"));
     }
     
     private void setupRecyclerView() {
         GridLayoutManager layoutManager = new GridLayoutManager(this, 1);
         recyclerView.setLayoutManager(layoutManager);
         
-        adapter = new GroupedCityAdapter(displayItems, this::onCitySelected);
+        adapter = new PickerAdapter(displayItems, this::onCountrySelected, this::onCitySelected);
         recyclerView.setAdapter(adapter);
     }
     
@@ -66,7 +75,8 @@ public class CitySelectionActivity extends AppCompatActivity {
             
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                rebuildItems(s.toString());
+                query = s.toString();
+                rebuildItems();
             }
             
             @Override
@@ -74,42 +84,79 @@ public class CitySelectionActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Rebuild grouped display items: countries strictly A-Z
-     * (Maroc in alphabetical position, no priority), cities A-Z
-     * within each country. Search filters across city names + country.
-     */
-    private void rebuildItems(String query) {
+    private void rebuildItems() {
         displayItems.clear();
         String currentLang = TranslationManager.getCurrentLanguage();
 
-        List<City> source;
-        if (query == null || query.isEmpty()) {
-            source = CitiesData.getAllCities();
+        if (mode == MODE_COUNTRIES) {
+            welcomeSubtitle.setText(TranslationManager.tr("city_selection.select_country"));
+            List<String> countries = CitiesData.searchCountries(query);
+            sortCountriesByDisplayName(countries);
+            if (!countries.isEmpty()) {
+                for (String fr : countries) {
+                    displayItems.add(new CountryEntry(fr, CitiesData.getCitiesByCountry(fr).size()));
+                }
+            } else {
+                // Query matched no country (e.g. a city name): show matching
+                // cities grouped under their country headers.
+                addGroupedCities(CitiesData.searchCities(query, currentLang), currentLang);
+            }
         } else {
-            source = CitiesData.searchCities(query, currentLang);
+            welcomeSubtitle.setText(TranslationManager.trCountry(selectedCountryFr));
+            List<City> all = CitiesData.getCitiesByCountry(selectedCountryFr);
+            List<City> shown = new ArrayList<>();
+            String q = TranslationManager.normalize(query);
+            for (City c : all) {
+                if (q.isEmpty()
+                        || TranslationManager.normalize(c.getName(currentLang)).contains(q)
+                        || TranslationManager.normalize(c.getNameEn()).contains(q)
+                        || TranslationManager.normalize(c.getNameFr()).contains(q)
+                        || TranslationManager.normalize(c.getNameAr()).contains(q)
+                        || TranslationManager.countryMatches(c.getCountry(), q)) {
+                    shown.add(c);
+                }
+            }
+            Collections.sort(shown, (a, b) ->
+                    a.getName(currentLang).compareToIgnoreCase(b.getName(currentLang)));
+            displayItems.addAll(shown);
         }
 
+        adapter.notifyDataSetChanged();
+    }
+
+    /** Group cities under A-Z country headers (fallback search results). */
+    private void addGroupedCities(List<City> source, String currentLang) {
         Map<String, List<City>> byCountry = new LinkedHashMap<>();
         for (City c : source) {
-            if (!byCountry.containsKey(c.getCountry())) {
-                byCountry.put(c.getCountry(), new ArrayList<>());
-            }
+            if (!byCountry.containsKey(c.getCountry())) byCountry.put(c.getCountry(), new ArrayList<>());
             byCountry.get(c.getCountry()).add(c);
         }
-
         List<String> countries = new ArrayList<>(byCountry.keySet());
-        Collections.sort(countries);
-
-        for (String country : countries) {
-            List<City> list = byCountry.get(country);
+        sortCountriesByDisplayName(countries);
+        for (String fr : countries) {
+            List<City> list = byCountry.get(fr);
             Collections.sort(list, (a, b) ->
                     a.getName(currentLang).compareToIgnoreCase(b.getName(currentLang)));
-            displayItems.add(country);
+            displayItems.add(fr);
             displayItems.addAll(list);
         }
+    }
 
-        if (adapter != null) adapter.notifyDataSetChanged();
+    private void sortCountriesByDisplayName(List<String> countries) {
+        Collections.sort(countries, (a, b) ->
+                TranslationManager.trCountry(a).compareToIgnoreCase(TranslationManager.trCountry(b)));
+    }
+
+    private void onCountrySelected(String frCountry) {
+        selectedCountryFr = frCountry;
+        mode = MODE_CITIES;
+        rebuildItems();
+    }
+
+    private void backToCountries() {
+        mode = MODE_COUNTRIES;
+        selectedCountryFr = null;
+        rebuildItems();
     }
     
     private void onCitySelected(City city) {
@@ -126,31 +173,66 @@ public class CitySelectionActivity extends AppCompatActivity {
     
     @Override
     public boolean onSupportNavigateUp() {
+        if (mode == MODE_CITIES) {
+            backToCountries();
+            return true;
+        }
         finish();
         return true;
     }
+
+    @Override
+    public void onBackPressed() {
+        if (mode == MODE_CITIES) {
+            backToCountries();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    /** Row wrapper for step 1 (String items are country section headers). */
+    public static class CountryEntry {
+        public final String frName;
+        public final int cityCount;
+        public CountryEntry(String frName, int cityCount) {
+            this.frName = frName;
+            this.cityCount = cityCount;
+        }
+    }
     
-    public static class GroupedCityAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        private static final int VIEW_HEADER = 0;
-        private static final int VIEW_CITY = 1;
+    public static class PickerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private static final int VIEW_COUNTRY = 0;
+        private static final int VIEW_HEADER = 1;
+        private static final int VIEW_CITY = 2;
 
         private final List<Object> items;
-        private OnCitySelectedListener listener;
+        private OnCountrySelectedListener countryListener;
+        private OnCitySelectedListener cityListener;
         private String selectedCityName;
         
+        public interface OnCountrySelectedListener {
+            void onCountrySelected(String frCountry);
+        }
+
         public interface OnCitySelectedListener {
             void onCitySelected(City city);
         }
         
-        public GroupedCityAdapter(List<Object> items, OnCitySelectedListener listener) {
+        public PickerAdapter(List<Object> items,
+                             OnCountrySelectedListener countryListener,
+                             OnCitySelectedListener cityListener) {
             this.items = items;
-            this.listener = listener;
+            this.countryListener = countryListener;
+            this.cityListener = cityListener;
             this.selectedCityName = SettingsManager.getDefaultCity();
         }
 
         @Override
         public int getItemViewType(int position) {
-            return items.get(position) instanceof City ? VIEW_CITY : VIEW_HEADER;
+            Object o = items.get(position);
+            if (o instanceof CountryEntry) return VIEW_COUNTRY;
+            if (o instanceof City) return VIEW_CITY;
+            return VIEW_HEADER;
         }
         
         @Override
@@ -168,15 +250,28 @@ public class CitySelectionActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             if (holder instanceof HeaderViewHolder) {
-                String country = (String) items.get(position);
+                String fr = (String) items.get(position);
                 int count = countCitiesAfter(position);
-                ((HeaderViewHolder) holder).countryName.setText(country + " (" + count + ")");
+                ((HeaderViewHolder) holder).countryName.setText(
+                        TranslationManager.trCountry(fr) + " (" + count + ")");
                 return;
             }
-            City city = (City) items.get(position);
             CityViewHolder cityHolder = (CityViewHolder) holder;
             String currentLang = TranslationManager.getCurrentLanguage();
-            
+
+            if (holder.getItemViewType() == VIEW_COUNTRY) {
+                CountryEntry entry = (CountryEntry) items.get(position);
+                cityHolder.cityName.setText(TranslationManager.trCountry(entry.frName));
+                cityHolder.cityRegion.setVisibility(View.VISIBLE);
+                cityHolder.cityRegion.setText(TranslationManager.tr(
+                        "city_selection.cities_in_country", String.valueOf(entry.cityCount)));
+                cityHolder.selectionIndicator.setVisibility(View.GONE);
+                cityHolder.itemView.setOnClickListener(v ->
+                        countryListener.onCountrySelected(entry.frName));
+                return;
+            }
+
+            City city = (City) items.get(position);
             cityHolder.cityName.setText(city.getName(currentLang));
             cityHolder.cityRegion.setVisibility(View.GONE);
             
@@ -187,7 +282,7 @@ public class CitySelectionActivity extends AppCompatActivity {
             cityHolder.itemView.setOnClickListener(v -> {
                 selectedCityName = city.getNameEn();
                 notifyDataSetChanged();
-                listener.onCitySelected(city);
+                cityListener.onCitySelected(city);
             });
         }
 

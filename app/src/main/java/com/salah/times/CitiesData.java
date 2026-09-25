@@ -547,15 +547,33 @@ public class CitiesData {
     public static List<City> searchCities(String query, String language) {
         List<City> results = new ArrayList<>();
         String q = normalize(query);
+        if (q.isEmpty()) {
+            results.addAll(cities.values());
+            return results;
+        }
         for (City city : cities.values()) {
             if (normalize(city.getName(language)).contains(q)
                     || normalize(city.getNameEn()).contains(q)
                     || normalize(city.getNameFr()).contains(q)
-                    || normalize(city.getCountry()).contains(q)) {
+                    || normalize(city.getNameAr()).contains(q)
+                    || TranslationManager.countryMatches(city.getCountry(), q)) {
                 results.add(city);
             }
         }
         return results;
+    }
+
+    /**
+     * French country names matching the query in ANY app language
+     * (insertion order; caller sorts for display).
+     */
+    public static List<String> searchCountries(String query) {
+        String q = normalize(query);
+        List<String> out = new ArrayList<>();
+        for (String c : getCountries()) {
+            if (TranslationManager.countryMatches(c, q)) out.add(c);
+        }
+        return out;
     }
 
     public static City getCityByName(String name) {
