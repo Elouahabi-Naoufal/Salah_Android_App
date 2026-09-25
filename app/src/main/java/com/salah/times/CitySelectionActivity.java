@@ -142,7 +142,8 @@ public class CitySelectionActivity extends AppCompatActivity {
             holder.cityRegion.setVisibility(View.VISIBLE);
             holder.cityRegion.setText(city.getCountry());
             
-            boolean isSelected = city.getNameEn().equals(selectedCityName);
+            boolean isSelected = CitiesData.getCityByName(selectedCityName).getNameEn()
+                    .equals(city.getNameEn());
             holder.selectionIndicator.setVisibility(isSelected ? View.VISIBLE : View.GONE);
             
             holder.itemView.setOnClickListener(v -> {

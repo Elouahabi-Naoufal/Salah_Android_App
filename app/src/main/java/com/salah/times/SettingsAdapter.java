@@ -98,7 +98,8 @@ public class SettingsAdapter extends FragmentStateAdapter {
             String currentLang = TranslationManager.getCurrentLanguage();
             
             for (int i = 0; i < cities.size(); i++) {
-                cityNames[i] = cities.get(i).getName(currentLang);
+                City c = cities.get(i);
+                cityNames[i] = c.getName(currentLang) + " (" + c.getCountry() + ")";
             }
             ArrayAdapter<String> cityAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, cityNames);
@@ -106,8 +107,9 @@ public class SettingsAdapter extends FragmentStateAdapter {
             citySpinner.setAdapter(cityAdapter);
             
             String currentCity = SettingsManager.getDefaultCity();
+            City current = CitiesData.getCityByName(currentCity);
             for (int i = 0; i < cities.size(); i++) {
-                if (cities.get(i).getNameEn().equals(currentCity)) {
+                if (cities.get(i).getNameEn().equals(current.getNameEn())) {
                     citySpinner.setSelection(i);
                     break;
                 }
