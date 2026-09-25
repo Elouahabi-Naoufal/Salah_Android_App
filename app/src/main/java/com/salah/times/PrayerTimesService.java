@@ -47,8 +47,13 @@ public class PrayerTimesService {
                     .timeout(15000)
                     .get();
 
-            Element table = doc.selectFirst("table.prayer");
-            if (table == null) throw new RuntimeException("table.prayer not found for " + city.getNameEn());
+            // New yabiladi layout (2026-09): 3x table.prayer-table
+            //   [0] vertical today: Prière|Heure (6 rows)
+            //   [1] 7-day forecast: Jour,Fajr,Dohr,Asr,Maghreb,Isha (8 rows)
+            //   [2] full month: same headers, ~30+ rows  <-- we want this one
+            // Fall back to legacy table.prayer / generic table for robustness.
+            Element table = pickMonthTable(doc);
+            if (table == null) throw new RuntimeException("prayer table not found for " + city.getNameEn());
 
             Elements rows = table.select("tr");
             DatabaseHelper db = StorageManager.getDb();
@@ -59,12 +64,17 @@ public class PrayerTimesService {
                 for (int i = 1; i < rows.size(); i++) {          // skip header row
                     Elements cells = rows.get(i).select("td");
                     if (cells.size() < 6) continue;
-                    String date    = cells.get(0).text().trim();  // e.g. "15/07"
+                    String date    = normalizeDate(cells.get(0).text());  // e.g. "25/09 Aujourd'hui" -> "25/09"
                     String fajr    = cells.get(1).text().trim();
                     String dohr    = cells.get(2).text().trim();
                     String asr     = cells.get(3).text().trim();
                     String maghreb = cells.get(4).text().trim();
                     String isha    = cells.get(5).text().trim();
+                    if (!isValidTime(fajr) || !isValidTime(dohr) || !isValidTime(asr)
+                            || !isValidTime(maghreb) || !isValidTime(isha)) {
+                        Log.w(TAG, "Skipping invalid row: " + date);
+                        continue;
+                    }
                     db.savePrayerTimes(tableName, date, fajr, dohr, asr, maghreb, isha);
                 }
                 db.getWritableDatabase().setTransactionSuccessful();
@@ -128,5 +138,53 @@ public class PrayerTimesService {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.add(java.util.Calendar.DAY_OF_YEAR, 1);
         return new SimpleDateFormat("dd/MM", Locale.getDefault()).format(cal.getTime());
+    }
+
+    // ── New-layout parsing helpers ──────────────────────────────────────
+
+    /**
+     * Pick the month table: the largest table with a 6-column
+     * Jour,Fajr,Dohr,Asr,Maghreb,Isha header. Prefers table.prayer-table,
+     * falls back to legacy table.prayer, then any generic table.
+     */
+    static Element pickMonthTable(Document doc) {
+        Elements candidates = doc.select("table.prayer-table");
+        Element best = largestSixColTable(candidates);
+        if (best != null) return best;
+        Element legacy = doc.selectFirst("table.prayer");
+        if (legacy != null && legacy.select("tr").size() > 1) return legacy;
+        return largestSixColTable(doc.select("table"));
+    }
+
+    private static Element largestSixColTable(Elements tables) {
+        Element best = null;
+        int bestRows = 0;
+        for (Element t : tables) {
+            Elements rows = t.select("tr");
+            if (rows.size() <= 1) continue;
+            Elements headerCells = rows.get(0).select("th, td");
+            if (headerCells.size() < 6) continue;   // skip vertical Prière|Heure table
+            if (rows.size() > bestRows) {
+                bestRows = rows.size();
+                best = t;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * "Vendredi 25/09 Aujourd'hui" / "25/09 Aujourd'hui" / "25/09" -> "25/09".
+     * Falls back to trimmed raw text if no dd/MM found.
+     */
+    static String normalizeDate(String raw) {
+        if (raw == null) return "";
+        java.util.regex.Matcher m =
+                java.util.regex.Pattern.compile("(\\d{1,2}/\\d{1,2})").matcher(raw);
+        if (m.find()) return m.group(1);
+        return raw.trim();
+    }
+
+    static boolean isValidTime(String t) {
+        return t != null && t.matches("\\d{1,2}:\\d{2}");
     }
 }

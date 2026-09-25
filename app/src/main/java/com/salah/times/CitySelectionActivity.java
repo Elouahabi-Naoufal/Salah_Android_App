@@ -139,7 +139,8 @@ public class CitySelectionActivity extends AppCompatActivity {
             String currentLang = TranslationManager.getCurrentLanguage();
             
             holder.cityName.setText(city.getName(currentLang));
-            holder.cityRegion.setVisibility(View.GONE);
+            holder.cityRegion.setVisibility(View.VISIBLE);
+            holder.cityRegion.setText(city.getCountry());
             
             boolean isSelected = city.getNameEn().equals(selectedCityName);
             holder.selectionIndicator.setVisibility(isSelected ? View.VISIBLE : View.GONE);

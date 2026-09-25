@@ -6,13 +6,20 @@ public class City {
     private String nameEn;
     private String nameAr;
     private String nameFr;
+    private String country;
 
-    public City(int id, String slug, String nameEn, String nameAr, String nameFr) {
+    public City(int id, String slug, String nameEn, String nameAr, String nameFr, String country) {
         this.id = id;
         this.slug = slug;
         this.nameEn = nameEn;
         this.nameAr = nameAr;
         this.nameFr = nameFr;
+        this.country = country;
+    }
+
+    /** Backward-compatible constructor (defaults country to "Maroc"). */
+    public City(int id, String slug, String nameEn, String nameAr, String nameFr) {
+        this(id, slug, nameEn, nameAr, nameFr, "Maroc");
     }
 
     public int getId() { return id; }
@@ -22,6 +29,7 @@ public class City {
     public String getNameEn() { return nameEn; }
     public String getNameAr() { return nameAr; }
     public String getNameFr() { return nameFr; }
+    public String getCountry() { return country; }
 
     public String getName(String language) {
         switch (language) {

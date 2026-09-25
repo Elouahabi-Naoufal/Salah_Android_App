@@ -55,9 +55,9 @@ public class ScrapeAllCitiesService extends Service {
                         .timeout(15000)
                         .get();
 
-                Element table = doc.selectFirst("table.prayer");
+                Element table = PrayerTimesService.pickMonthTable(doc);
                 if (table == null) {
-                    Log.w(TAG, "SKIP " + city.getNameEn() + " - table.prayer not found");
+                    Log.w(TAG, "SKIP " + city.getNameEn() + " - prayer table not found");
                     failed++;
                     continue;
                 }
@@ -75,14 +75,25 @@ public class ScrapeAllCitiesService extends Service {
                     for (int r = 1; r < rows.size(); r++) {   // skip header
                         Elements cells = rows.get(r).select("td");
                         if (cells.size() < 6) continue;
+                        String date = PrayerTimesService.normalizeDate(cells.get(0).text());
+                        String fajr = cells.get(1).text().trim();
+                        String dohr = cells.get(2).text().trim();
+                        String asr = cells.get(3).text().trim();
+                        String maghreb = cells.get(4).text().trim();
+                        String isha = cells.get(5).text().trim();
+                        if (!PrayerTimesService.isValidTime(fajr)
+                                || !PrayerTimesService.isValidTime(dohr)
+                                || !PrayerTimesService.isValidTime(asr)
+                                || !PrayerTimesService.isValidTime(maghreb)
+                                || !PrayerTimesService.isValidTime(isha)) continue;
                         db.savePrayerTimes(
                                 tableName,
-                                cells.get(0).text().trim(),   // date  e.g. "15/07"
-                                cells.get(1).text().trim(),   // fajr
-                                cells.get(2).text().trim(),   // dohr
-                                cells.get(3).text().trim(),   // asr
-                                cells.get(4).text().trim(),   // maghreb
-                                cells.get(5).text().trim()    // isha
+                                date,   // normalized dd/MM
+                                fajr,
+                                dohr,
+                                asr,
+                                maghreb,
+                                isha
                         );
                         rowCount++;
                     }

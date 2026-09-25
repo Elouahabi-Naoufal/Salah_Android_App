@@ -24,10 +24,11 @@ public class UpdateTimestampManager {
     
     public boolean shouldUpdateData() {
         try {
-            // First check if we have all 43 cities
+            // First check if we have all cities (dynamic: 419 since 2026-09 expansion)
+            int expected = CitiesData.getAllCities().size();
             int existingCities = countExistingCityJsonFiles();
-            if (existingCities < 43) {
-                Log.d(TAG, "Missing cities: " + existingCities + "/43, update needed");
+            if (existingCities < expected) {
+                Log.d(TAG, "Missing cities: " + existingCities + "/" + expected + ", update needed");
                 return true;
             }
             
